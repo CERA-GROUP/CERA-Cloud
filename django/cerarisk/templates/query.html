@@ -1,0 +1,781 @@
+{% load tz %}
+
+<!DOCTYPE html>
+<head>
+	<link rel="stylesheet" href="/{{basepath}}/_css/jquery-ui-1.11.css" type="text/css"/>
+	<style type="text/css">
+		.info {
+			width:526px;
+			height:386px;
+			font-family:Arial, Helvetica, sans-serif;
+			font-size: 12px;
+			background-color:#EAE6EA;
+			line-height:24px;
+			position: relative; /*to position the node id link at the bottom*/
+			overflow: hidden;
+			margin:0;padding:0;
+		}
+		.red {color:#aa0000;font-weight:bold}
+		.blue{color:#2A2D93;font-weight:bold}
+	</style>
+	<script type="text/javascript" language="JavaScript" src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+	<script type="text/javascript" language="JavaScript" src="/{{basepath}}/_scripts/highcharts.js"></script>
+
+	<script type="text/javascript" language="JavaScript">
+	//rounding (-precision means rounding to values after comma (exponent))
+	(function() {
+		function decimalAdjust(type, value, exp) {
+			// If the exp is undefined or zero...
+			if (typeof exp === 'undefined' || +exp === 0) {
+				return Math[type](value);
+			}
+			value = +value;
+			exp = +exp;
+			// If the value is not a number or the exp is not an integer...
+			if (value === null || isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
+				return NaN;
+			}
+			// If the value is negative...
+			if (value < 0) {
+				return -decimalAdjust(type, -value, exp);
+			}
+			// Shift
+			value = value.toString().split('e');
+			value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
+			// Shift back
+			value = value.toString().split('e');
+			return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
+		}
+		// Decimal round
+		if (!Math.round10) {
+			Math.round10 = function(value, exp) {
+				return decimalAdjust('round', value, exp);
+			};
+		}
+	})();
+
+	function m_to_ft(val, unit, precision_ft, precision_m)
+	{
+		if (unit == 'ft') {
+			return Math.round10(val * 3.28083, -precision_ft).toFixed(precision_ft) + " ft";
+		}
+		return Math.round10(val, -precision_m).toFixed(precision_m) + " m";
+	}
+	//do this for correct rounding
+	function s_to_s(val, unit, precision_ft, precision_m)
+	{
+		if (unit == 'ft') {
+			return Math.round10(val, -precision_ft).toFixed(precision_ft) + " s";
+		}
+		return Math.round10(val, -precision_m).toFixed(precision_m) + " s";
+	}
+	function ms_to_mph_or_kmh(val, unit, precision_ft, precision_m)
+	{
+		if (unit == 'ft') {
+			return Math.round10(val * 2.236936, -precision_ft).toFixed(precision_ft) + " mph";
+		}
+		return Math.round10(val * 3.6, -precision_m).toFixed(precision_m) + " kmh"
+	}
+
+	function precision() {
+		//precision for labels on y-axis (left and right side), and to show the max value in the header with the appropriate precision
+		var precision_ft = 2;	// ft, mph, s
+		var precision_m = 2; // m, kmh
+
+		var minimum_val = 0;
+		{% if minval != None and minval < 0%}
+			minimum_val = {{minval}};
+		{% endif %}
+		var maximum_val = 0; //in m
+		{% if maxval != None %}
+			maximum_val = {{maxval}};
+		{% endif %}
+
+		{% if name == 'elev' or name == 'inun' or name == 'hsign' %}
+			diff_ft = (maximum_val*3.28083) - (minimum_val*3.28083);	  // ft
+			diff_m = maximum_val - (minimum_val);		              // m
+		{% endif %}
+		{% if name == 'tps' %}
+			diff_ft = maximum_val - (minimum_val);						  // s
+			// tps no right y-axis, set pseudo value
+			diff_m = 1;
+		{% endif %}
+		{% if name == 'wvel' %}
+			diff_ft = (maximum_val*2.236936) - (minimum_val*2.236936); // mph
+			diff_m = (maximum_val*3.6) - (minimum_val*3.6);		  //km/h
+		{% endif %}
+
+		if (diff_ft != 0 && diff_ft < 0.05)
+			precision_ft = 3;
+
+		if (diff_ft != 0 && diff_m < 0.05)
+			precision_m = 3;
+
+		return [precision_ft, precision_m];
+	}
+
+	function layer_text() {
+		//text for layer_name
+		var layer_text =
+			{% if name == 'elev' %}
+				'Water Height';
+			{% elif name == 'inun' %}
+				'Inundation Depth';
+			{% elif name == 'hsign' %}
+				'Significant Wave Height';
+			{% elif name == 'tps' %}
+				'Peak Wave Period';
+			{% elif name == 'wvel' %}
+				'Wind Speed';
+			{% else %}
+				''
+			{% endif %}
+		return layer_text
+	}
+
+	$(document).ready(function() {
+
+		//precision for labels on y-axis (left and right side)
+		precision_ft = precision()[0]	// ft, mph, s
+		precision_m = precision()[1]   // m, km/h
+		//daytime format for day and hour (zoom in) on x-axis depending on time_zone
+		//timezone: {{time_zone}}
+		var dayformat =
+			//dayformat for hypothetical runs (2222) is defined as label formatter in x-axis
+			{% if time_zone == 'UTC' %}
+				'%b %d<br> %H:%M'
+			{% else %}
+				'%b %d<br> %l %p'
+			{% endif %}
+
+		var hourformat =
+			{% if time_zone == 'UTC' %}
+				'%b %d<br> %H:%M'
+			{% else %}
+				'%b %d<br> %l %p'
+			{% endif %}
+
+		// tooltip format for hypothetical runs is defined in function tooltip
+		//Highcharts.dateformat does not support timezone format; get selected_tz (timezone only) from django views.py
+		var dayformat_tooltip =
+			{% if time_zone == 'UTC' %}
+				'%b %d, %H:%M {{selected_tz}}'
+			{% else %}
+				'%b %d, %l %p  {{selected_tz}}'
+			{% endif %}
+
+		//text groundheight for inun plotlines
+		var groundheight = 'not available';
+
+		{% if bathymetry != None and requested_info.surfheight != None and requested_info.surfheight != '' and requested_info.surfheight != -99999%}
+			var bathymetry_msl = {{bathymetry}}+{{requested_info.surfheight}};
+			var groundheight = 'ground: ' + (m_to_ft((-1)*({{bathymetry}}), '{{unit}}', precision_ft, precision_m)) + {% if bathymetry > 0 %}' below '{% else %}' above '{% endif %} + {% if requested_info.grid_datum == 'msl' %}'MSL'{% else %}'NAVD88'{% endif %}
+			{% if requested_info.surfheight != 0 and requested_info.grid_datum != 'msl' %}
+				+ ', ' + (m_to_ft((-1)*bathymetry_msl, '{{unit}}', precision_ft, precision_m)) + {% if bathymetry_msl > 0 %}' below '{% else %}' above '{% endif %} + 'MSL'
+			{% endif %};
+		{% endif %}
+
+		/////////////////////////////////////////////////////////////////////////////////
+
+		var chart = new Highcharts.Chart({
+
+			chart: {
+				renderTo: 'chart_div',
+				width: 526, //2px smaller than iframe to avoid overflow
+				height: 321,
+				type: 'areaspline',
+				// modify the legend symbol for the areaspline from a rectangle to a line
+				events: {
+					load: function(event) {
+					$('.highcharts-legend-item rect').attr('height', '2').attr('y', '10');
+					}
+				},
+				marginTop: 33,
+				marginBottom: 55,
+				spacingTop: 4,
+				spacingLeft: 5,
+				spacingRight: 5,
+				zoomType: 'x',
+				plotBorderColor: null,
+				backgroundColor: {
+					linearGradient: [0, 0, 250, 500],
+					stops: [
+						[0, 'rgb(76, 76, 88)'],
+						[0, 'rgb(48, 48, 116)'],
+						[1, 'rgb(0, 0, 0)']
+					]
+				}
+			},
+			title: {
+//			{% if query_data != None %}
+//				text: layer_text() + ' ({{unit}})',
+//			{% else %
+				text: null
+//			{% endif %}
+//				style:{
+//					color: '#FFF',
+//					font: '13px Arial'
+//				}
+			},
+			subtitle: {
+			{% if query_data != None %}
+				text: 'Click and drag in the plot area to zoom in',
+				style:{
+					color: '#6D869F',
+				}//,
+				//y:29 //to position the subtitle correctly under the title
+			{% else %}
+				text: 'No time series available at this location.',
+				style:{
+					color: '#FFF',
+					font: '13px Arial',
+				},
+				verticalAlign: 'middle',
+				y: -50
+			{% endif %}
+			},
+			//colors: ['#4572A7', '#aa0000','#DDDF0D','#aa0000'],
+			colors: ['#4572A7', '#aa0000','#aa0000'],
+			credits: { enabled: false },
+			plotOptions: {
+				areaspline: {
+					fillColor: {
+						linearGradient: [0, 0, 0, 300],
+						stops: [
+							[0, 'rgb(69, 114, 167)'],
+							[1, 'rgba(2,0,0,0)']
+						]
+					},
+					marker: {
+						radius: 0,			//keep it to draw the max/min values, set to 0 to avoid to be seen on the line
+						symbol: 'circle',
+						states: {
+							hover: {enabled: true, radius: 3},
+							shadow: false
+						}
+					},
+					lineWidth: 2,
+					states: {
+						hover: {enabled: true, lineWidth: 2}
+					},
+					connectNulls: true
+				}
+			},
+			xAxis: {
+				{% if timestep_ms != None %}plotLines: [{color: '#aa0000', value: {{timestep_ms}}, width:1, zIndex:5}],{% endif %}
+				type: 'datetime',
+				dateTimeLabelFormats: { //custom date formats for different timezones
+					//dayformat for hypothetical runs (2222) is defined as labels formatter function (see below)
+					day: dayformat,
+					hour: hourformat
+				},
+				maxZoom: 24 * 3600 * 1000, //one day
+				lineColor:'#4D4D55',
+				lineWidth:1,
+				gridLineColor:'#4D4D55',
+				gridLineWidth: 1,
+				labels: {style: {color: "#CCC", font: '11px Arial'}},
+				tickWidth: 1,
+				tickLength: 5,
+				tickColor: '#CCC',
+				maxPadding: false, //avoid empty days after the last value if this value is at 00:00
+				//maxPadding: 0.005, // ~1px padding at the right edge
+				endOnTick: false,
+				showLastLabel: true,
+				labels: {
+					{% if runstart_year == '2222' %}
+						formatter: function() {
+							if (this.value != 7954934400000) { // omit 'Day 31' as label
+								return Highcharts.dateFormat('Day %e', this.value) }
+						},
+					{% endif %}
+					style: {color: "#CCC", font: '11px Arial'},
+					y: 15,  //The y position offset of the label
+				},
+				tickInterval: 24 * 3600 * 1000 //one day
+			},
+			yAxis: [{ // primary yAxis
+				title: {text: null},
+				lineColor: '#CCC',
+				lineWidth: 1,
+				gridLineColor: '#4D4D55',
+				labels: {
+					formatter: function() {
+						{% if name == 'elev' or name == 'inun' or name == 'hsign' %}
+							//m (in ADCIRC) to ft
+							return m_to_ft(this.value, '{{unit}}', precision_ft, precision_m);
+						{% endif %}
+						{% if name == 'tps' %}
+							 return Highcharts.numberFormat(this.value, precision_ft) + " s";
+						{% endif %}
+						{% if name == 'wvel' %}
+							//m/s to mph
+							return ms_to_mph_or_kmh(this.value, '{{unit}}', precision_ft, precision_m);
+						{% endif %}
+					},
+					style: {color: "#CCC", font: '11px Arial'},
+					y: 0  //The y position offset of the label, default 3
+				},
+				//minRange: 0.1, //limits the intervall on left y-axis to 0.1
+				tickWidth: 1,
+				tickColor: '#CCC',
+				maxPadding: 0.02, //will make a 100px y-axis 2 px longer
+				endOnTick: true,
+				
+				plotLines: [
+				{% if name == 'elev' or name == 'inun' or name == 'hsign' %}
+					{
+					color: '#949537',
+					width: 1,
+					label: {
+						//if inun and cls == 1 or 2: y-axis zero is {{bathymetry}}(ground height)
+						{% if name == 'inun' %}
+							{% if cls == 1 or cls == 2 %}
+								text: groundheight,
+							{% else %}
+								text: 'water height above MSL',
+							{% endif %}
+						{% else %}
+							{% if requested_info.grid_datum == 'msl' %}
+								text: 'MSL',
+							{% else %}
+								text: 'NAVD88',
+							{% endif %}
+						{% endif %}
+						style: {
+							color: '#D4D537',
+							font: '10px Verdana'
+						},
+						align: 'right',
+						x: -5, //The x position offset of the label
+						y: -4
+					},
+					value: 0, //the position of the line in axis units
+					zIndex: 6 //do not set higher than 6 to keep the tooltip on top
+					}
+				{% endif %}
+
+				//MSL plotline if grid is NAVD and data are relative to NAVD (not inun)
+				{% if requested_info.surfheight != None and requested_info.surfheight != '' and requested_info.surfheight != 0 and requested_info.grid_datum != 'msl'%}
+					{% if name == 'elev' or name == 'hsign' %}
+						,{
+						color: '#CCC',
+						width: 1,
+						label: {
+							text: 'MSL',
+							style: {
+								color: '#CCC',
+								font: '10px Verdana'
+							},
+							x: 5, //The x position offset of the label
+							y: -4
+						},
+						value: {{requested_info.surfheight}}, //the position of the line in axis units
+						zIndex: 6 //do not set higher than 6 to keep the tooltip on top
+						}
+					{% endif %}
+				{% endif %}
+
+				{% if name == 'wvel' and requested_info.has_adv %}
+					//Saffir-Simpson for wvel for active storms or hindcasts (value = m/s)
+					// TD drawn beneath TS to show label only
+					,{color: '#1E64FF', width: 1, label: {text: "TD", style: {color: '#1E64FF', font: '10px Verdana'}, x:5, y:9}, value: 17.43, zIndex: 5},
+					{color: '#5AB9FF', width: 1, label: {text: "TS", style: {color: '#5AB9FF', font: '10px Verdana'}, x:5, y:-3}, value: 17.43, zIndex: 5},
+					{color: '#FFFFCD', width: 1, label: {text: "H1", style: {color: '#FFFFCD', font: '10px Verdana'}, x:5, y:-3}, value: 33.08, zIndex: 5},
+					{color: '#FFEB73', width: 1, label: {text: "H2", style: {color: '#FFEB73', font: '10px Verdana'}, x:5, y:-3}, value: 42.91, zIndex: 5},
+					{color: '#FF9B00', width: 1, label: {text: "H3", style: {color: '#FF9B00', font: '10px Verdana'}, x:5, y:-3}, value: 49.62, zIndex: 5},
+					{color: '#FF5000', width: 1, label: {text: "H4", style: {color: '#FF5000', font: '10px Verdana'}, x:5, y:-3}, value: 58.12, zIndex: 5},
+					{color: '#CD0000', width: 1, label: {text: "H5", style: {color: '#CD0000', font: '10px Verdana'}, x:5, y:-3}, value: 70.18, zIndex: 5}
+				{% endif %}
+				]
+//			},
+//			{ // secondary yAxis
+//				title: {text: null},
+//				gridLineColor: '#4D4D55',
+//				{% if name == 'elev' or name == 'inun' or name == 'hsign' or name == 'wvel' %}
+//					labels: {
+//						formatter: function() { return Highcharts.numberFormat
+//						{% if name == 'elev' or name == 'inun' or name == 'hsign' %}
+//							// m
+//							(this.value, precision_m) + " m";
+//						{% endif %}
+//						{% if name == 'wvel' %}
+//							//m/s to kmh
+//							(this.value*3.6, precision_m) + " kmh";
+//						{% endif %}
+//						},
+//						style: {color: '#CCC', font: '11px Arial'},
+//						y: 0  //The y position offset of the label, default 3
+//					},
+//					lineColor: '#CCC',
+//					lineWidth: 1,
+//					tickWidth: 1,
+//					tickColor: '#CCC',
+//				{% else %}
+//					labels: {
+//						formatter: function() {return '';}
+//					},
+//				{% endif %}
+//				linkedTo: 0,     //Index of another axis that this axis is linked to
+//				opposite: true
+			}],
+			tooltip: {
+				useHTML: true,
+ 				zIndex: 9998,
+				formatter: function() {
+					// show value relative to vert_grid_datum
+					if (this.y > 0) {
+						text = ' above '
+						value_y = this.y
+					}
+					else {
+						text = ' below '
+						value_y = (this.y)*(-1)
+					}
+
+					{% if requested_info.surfheight != None and requested_info.surfheight != '' and requested_info.surfheight != 0 and requested_info.grid_datum != 'msl' %}
+					var y_msl = this.y -{{requested_info.surfheight}}
+					if (y_msl > 0) {
+						text_msl = ' above '
+						value_msl = y_msl
+					}
+					else {
+						text_msl = ' below '
+						value_msl = (y_msl)*(-1)
+					}
+					{% endif %}
+
+					var hypothetical_tooltip;
+					if (this.x < 7955020800000) { // omit day for Dec 31
+						//will only be on UTC websites
+						hypothetical_tooltip = '%k hours' } //without leading zeros
+					else if (this.x >= 7955020800000 & this.x < 7955107200000) { //day 1 (= Jan 1)
+						hypothetical_tooltip = '1 day, %k hours' }
+					else {
+						hypothetical_tooltip = '%e days, %k hours' }
+
+					var result = '<div style="font:12px Arial;line-height:18px"><b>'+ layer_text() + ': ' + Highcharts.dateFormat({% if runstart_year == '2222' %}hypothetical_tooltip{% else %}dayformat_tooltip{% endif %}, this.x)
+					+ '</b><br/>' + '<span class="red">' +
+					{% if name == 'elev' or name == 'inun' or name == 'hsign' %}
+						m_to_ft(value_y, '{{unit}}', precision_ft, precision_m) + '</span>' + text +
+						{% if name == 'inun' %}
+							{% if cls == 1 or cls == 2 %}
+								'ground'
+							{% else %}
+								{% if requested_info.grid_datum == 'msl' %}'Mean Sea Level'{% else %}'NAVD88'{% endif %}
+							{% endif %}
+						{% else %}
+							{% if requested_info.grid_datum == 'msl' %}'Mean Sea Level'{% else %}'NAVD88'{% endif %};
+						{% endif %}
+
+						{% if name == 'elev' or name == 'hsign' %} //show MSL value for NAVD grids: inun is independent from vertical datum
+							{% if requested_info.surfheight != None and requested_info.surfheight != '' and requested_info.surfheight != 0 and requested_info.grid_datum != 'msl' %}
+								result += '<br/><span class="blue">' + m_to_ft(value_msl, '{{unit}}', precision_ft, precision_m)
+								+ '</span>' + text_msl + 'Mean Sea Level';
+							{% endif %}
+						{% endif %}
+
+						if ({{maxval}} != this.y) {
+							result += '<br/><span class="blue">' +
+								m_to_ft(({{maxval}}-this.y), '{{unit}}', precision_ft, precision_m)
+								+ '</span> below max. ' + layer_text().toLowerCase();
+						}
+					{% endif %}
+
+					{% if name == 'tps' %}
+						Highcharts.numberFormat(this.y, precision_ft) +' s</span>' ;
+						if ({{maxval}} != this.y) {
+							result += '<br/><span class="blue">' +
+								Highcharts.numberFormat(({{maxval}}-(this.y)), precision_ft) + ' s</span> less than max. ' + layer_text().toLowerCase();
+						}
+					{% endif %}
+
+					{% if name == 'wvel' %}
+						ms_to_mph_or_kmh(this.y, '{{unit}}', precision_ft, precision_m) + '</span>'
+						if ({{maxval}} != this.y) {
+							result += '<br/><span class="blue">' +
+								ms_to_mph_or_kmh(({{maxval}}-this.y), '{{unit}}', precision_ft, precision_m)
+								+ '</span> below max. ' + layer_text().toLowerCase();
+						}
+					{% endif %}
+
+					var max_hr = ({{maxval_ms}}-(this.x))/3600000;
+					if (max_hr > 0) {
+						result += '<br/><span class="blue">' + Highcharts.numberFormat(max_hr, 0) + ' hrs </span>before max. ' + layer_text().toLowerCase();
+					}
+					else if (max_hr < 0) {
+						result += '<br/><span class="blue">' + Highcharts.numberFormat(-(max_hr), 0) + ' hrs </span>after max. ' + layer_text().toLowerCase();
+					}
+					result += '</div'
+					return result;
+				}
+			},
+			legend: {
+				layout: 'horizontal',
+				align: 'center',
+				x: -5,	//centers the legend
+				y: 11,	//top distance to plot area
+				verticalAlign: 'bottom',
+				borderWidth: 0,
+				//symbolWidth: 30,
+				//symbolHeight: 2,
+				//symbolPadding: 10, //padding between the legend item symbol and the legend item text
+				//itemWidth: 140, //determines the distance between to legend items
+				itemStyle: {color: '#CCC', font: '11px Arial', cursor: 'default'},
+				//itemHoverStyle: {color: '#CCC', cursor: 'default'},
+
+				labelFormatter: function() {
+					if (this.name == 'elev' || this.name == 'inun' || this.name == 'hsign' || this.name == 'tps' || this.name == 'wvel') {
+						return 'predicted ' + layer_text().toLowerCase();
+					}
+					else { return this.name; }
+				}
+			},
+
+			series: [{% autoescape off %}
+				{% if query_data != None %}
+					{{query_data}}
+					{% if maxval %}
+					,
+					// modify the legend symbol for the max_value to a point
+					{
+						name: 'predicted maximum',
+						type: 'line', 	// this allows to draw the markers for areaspline as point in the legend
+						lineWidth:0,  	// draw only the point and not the line in legend
+						color: '#aa0000',
+						marker: {
+							radius: 3,
+							symbol: 'circle'
+						},
+						id: 'maxvalue'	// link to data series for max_value
+					},
+					//max_value data point
+					{
+						linkedTo: 'maxvalue',
+						data: [{ x: {{maxval_ms}}, y: {{maxval}} }],
+						marker: {
+							radius: 3,
+							symbol: 'circle',
+							states: {hover: {enabled: true, radius: 4}}
+						},
+						lineWidth: 0,
+						zIndex:2	
+					}
+					{% endif %}
+//					{% if minval != None %}
+//					,
+//					// modify the legend symbol for the min_value to a point
+//					{
+//						name: 'minimum',
+//						type: 'line', 	// this allows to draw the markers for areaspline as point in the legend
+//						lineWidth:0,  	// draw only the point and not the line in legend
+//						color: '#DDDF0D',
+//						marker: {
+//							radius: 3,
+//							symbol: 'circle'
+//						},
+//						id: 'minvalue'	// link to data series for max_value
+//					},
+					//min_value data point
+//					{
+//					linkedTo: 'minvalue',
+//						data: [{ x: {{minval_ms}}, y: {{minval}} }],
+//						marker: {
+//							radius: 3,
+//							symbol: 'circle',
+//							states: {hover: {enabled: true, radius: 4}}
+//						},
+//						zIndex:19
+//					}
+//					{% endif %}
+					{% if timestep_ms != None %}
+					,{
+						name: 'selected time',
+						data: [{ x: {{timestep_ms}}, y: 0 }],
+						marker: {radius: 0},
+						linewidth: 1,
+						zIndex:1,
+						enableMouseTracking: false //hide tooltips for advisory point
+					}
+					{% endif %}
+					{% if advisory_data != None %}
+					,{
+						name: 'advisory time',
+						data: {{advisory_data}},
+						marker: {radius: 0},
+						linewidth: 1,
+						zIndex:1,
+						enableMouseTracking: false //hide tooltips for advisory point
+					}
+					{% endif %}
+				{% endif %}
+				{% endautoescape %}
+			]
+		});
+	});
+	</script>
+</head>
+<!--///////////////////////////////////////////////////-->
+<body>
+<div class="info" align="center">
+
+	<div><b><script type="text/javascript">
+	document.write(layer_text() + ' ({{unit}})')</script></b></div>
+
+	<div style="background-color:#FFF; line-height:21px">
+	<script type="text/javascript">
+
+	//precision for max value
+	precision_ft = precision()[0];	// ft, mph, s
+	precision_m = precision()[1];   // m, km/h
+
+	// time for currently displayed time step
+	{% if timestep_date != None %}
+	var ts_date =
+		{% if time_zone == "UTC" %}{% timezone "UTC" %}
+			//will only be on UTC websites
+			{% if runstart_year == '2222' %}
+				{% if timestep_ms < 7955020800000 %} // omit day for Dec 31
+					"{{timestep_date|date:'G'}} hours" // without leading zeros
+				{% elif timestep_ms >= 7955020800000 and timestep_ms < 7955107200000 %} //day 1 (= Jan 1)
+					"1 day, {{timestep_date|date:'G'}} hours"
+				{% else %}
+					"{{timestep_date|date:'j'}} days, {{timestep_date|date:'G'}} hours"	// without leading zeros
+				{% endif %}
+			{% else %}
+				"{{timestep_date|date:'d-M-Y H:i'}} UTC"
+			{% endif %}
+		{% endtimezone %}
+		{% elif time_zone == "CDT" %}{% timezone "US/Central" %}
+			"{{timestep_date|date:'d-M-Y, f A T'}}"
+		{% endtimezone %}
+		{% elif time_zone == "EDT" %}{% timezone "US/Eastern" %}
+			"{{timestep_date|date:'d-M-Y, f A T'}}"
+		{% endtimezone %}
+		{% elif time_zone == "AST" %}{% timezone "America/Puerto_Rico" %}
+			"{{timestep_date|date:'d-M-Y, f A T'}}"
+		{% endtimezone %}{% endif %}
+	{% endif %}
+
+	document.write
+	//time steps
+	{% if layername == 'elev' or layername == 'inun' or layername == 'hsign'  or layername == 'tps' or layername == 'wvel' or layername == 'elevshp' or layername == 'inunshp' or layername == 'hsignshp'  or layername == 'tpsshp' or layername == 'wvelshp'%}
+		("<span class='red'>" + layer_text() + "</span> at selected time (" + ts_date + "): <span class='red'>" +
+		{% if query_data != None %}
+		//write the current value of the timeseries into first line
+		{% if name == 'elev' or name == 'inun' or name == 'hsign' %}
+		//m to ft
+			m_to_ft({{timestep_value}}, '{{unit}}', precision_ft, precision_m)
+		{% endif %}
+		{% if name == 'tps' %}
+			({{timestep_value}}).toFixed(precision_ft) + " s"
+		{% endif %}
+		{% if name == 'wvel' %}
+			//m/s to mph and kmh
+			ms_to_mph_or_kmh({{timestep_value}}, '{{unit}}', precision_ft, precision_m)
+		{% endif %}
+		{% else %}
+			"not available"
+		{% endif %}
+		+ "</span>");
+	{% else %}
+	//max layers
+		("<span class='red'>Maximum " + layer_text() + "</span> " +
+		{% if requested_info.track_id.advisory.advisory == 999 %}
+			"during the model hindcast: "
+		{% else %}
+			"predicted during the model forecast: "
+		{% endif %} +
+		"<span class='red'>" +
+		{% if query_data != None or max_layer != None %}
+			{% if query_data != None %}
+			//write the maxval of the timeseries into first line
+				{% if name == 'elev' or name == 'inun' or name == 'hsign' %}
+					//m to ft
+					m_to_ft({{maxval}}, '{{unit}}', precision_ft, precision_m)
+				{% endif %}
+				{% if name == 'tps' %}
+					({{maxval}}).toFixed(precision_ft) + " s"
+				{% endif %}
+				{% if name == 'wvel' %}
+					//m/s to mph and kmh
+					ms_to_mph_or_kmh({{maxval}}, '{{unit}}', precision_ft, precision_m)
+				{% endif %}
+			{% else %}
+				{% if name == 'elev' or name == 'inun' or name == 'hsign' %}
+					//m to ft
+					m_to_ft({{max_layer}}, '{{unit}}', precision_ft, precision_m)
+				{% endif %}
+				{% if name == 'tps' %}
+					({{max_layer}}).toFixed(precision_ft) + " s"
+				{% endif %}
+				{% if name == 'wvel' %}
+					//m/s to mph and kmh
+					ms_to_mph_or_kmh({{max_layer}}, '{{unit}}', precision_ft, precision_m)
+				{% endif %}
+			{% endif %}
+		{% else %}
+			"not available"
+		{% endif %}
+		+ "</span>");
+		{% endif %}
+
+	</script>
+	</div>
+
+	<div id="chart_div"></div>
+	   <!-- {{error}} -->
+
+	<div style="font-size:11px;height:20px;line-height:20px;padding-left:5px;text-align:left">
+    
+		<span style="float:right;padding-right:5px">
+		{% if requested_info.grid_datum != 'msl' %}{% if requested_info.surfheight != None and requested_info.surfheight != '' and requested_info.surfheight != 0 %}MSL is
+			<script type="text/javascript">
+			document.write(
+				{% if unit == 'ft' %}
+					({{requested_info.surfheight}}*3.28083).toFixed(3) + " ft"
+				{% else %}
+					{{requested_info.surfheight}}.toFixed(3) + " m"
+				{% endif %}
+				);
+				</script>
+			{% if '-' in requested_info.surfheight %}below{% else %}above{% endif %} NAVD88.{% endif %}
+		{% endif %}
+		</span>
+		{% if cls != None %}
+			ADCIRC node: {{queryid}} {% if cls == 0 %} <span class="red">wet{% else %}dry{% endif %}</span>. 
+		{% endif %}
+
+		<script type="text/javascript">
+		function addCommas(nStr)
+		{
+			nStr += '';
+			x = nStr.split('.');
+			x1 = x[0];
+			x2 = x.length > 1 ? '.' + x[1] : '';
+			var rgx = /(\d+)(\d{3})/;
+			while (rgx.test(x1)) {
+				x1 = x1.replace(rgx, '$1' + ',' + '$2');
+			}
+			return x1 + x2;
+		}
+		document.write(
+			{% if bathymetry != None %}
+				"Elevation: " +
+				//m to ft
+				{% if unit == 'ft' %}
+					addCommas(({{bathymetry}}*3.28083*(-1)).toFixed(2)) + " ft"
+				{% else %}
+					addCommas(({{bathymetry}}*(-1)).toFixed(2)) + " m"
+				{% endif %}
+			{% else %}
+				"<span style='color:#CC0000'><b>not available.</b></span>"
+			{% endif %}
+		);
+		</script>
+		{% if bathymetry > 0 %}below{% else %}above{% endif %}
+			{% if requested_info.grid_datum == 'msl' %}MSL{% else %}NAVD88{% endif %}.
+   </div>
+
+</body>
+</html>

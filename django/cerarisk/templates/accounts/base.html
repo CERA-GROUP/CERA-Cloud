@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta name="description" content="A real-time, event-triggered storm surge guidance system for the coastal regions of the U.S. The displays depict surge elevation, wave heights, wave periods, and wind speed obtained from simulations of daily weather conditions from the ADCIRC coastal circulation model." />
+	<meta name="keywords" content="CERA, ADCIRC, Coastal Emergency Risks Assessment, web mapper, ADCIRC, SWAN, coastal risks, risks assessment, storm surge, hurricane surge, hurricane flood, storm flood, storm inundation, storm map, hurricane map,tropical cyclone,storm simulation,storm forecast,coastal map,storm modeling" />
+        
+	<link rel="stylesheet" type="text/css" href="/cera_risk/_css/cera_login.css"/>
+	<link rel="shortcut icon" href="/cera_risk/_images/cera_pro.ico" />
+	{% block head %}
+	{% endblock head %}
+</head>
+
+<body>
+	<div class="container">
+        <div class="banner"><a href="https://cera.coastalrisk.live" target="_blank" title="CERA Homepage" ></a></div>
+
+		<div class="content">
+            {% block body %}
+            {% endblock body %}
+		</div>
+        
+	</div>
+
+</body>
+</html>

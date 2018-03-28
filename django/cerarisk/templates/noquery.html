@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<head> 
+    <style type="text/css">
+		.info {
+			width:526px;
+			height:386px;
+			font-family:Arial, Helvetica, sans-serif;
+			font-size: 12px;
+			background-color:#EAE6EA;
+			line-height:24px;
+			position: relative; /*to position the node id link at the bottom*/
+			overflow: hidden;
+			margin:0;padding:0
+		}
+		.red {color:#aa0000;font-weight:bold}
+	</style>
+
+	<script type="text/javascript" language="JavaScript">
+	function layer_text() {
+		//text for layer_name
+		var layer_text =
+			{% if name == 'elev' %}
+				'Water Height';
+			{% elif name == 'inun' %}
+				'Inundation Depth';
+			{% elif name == 'hsign' %}
+				'Significant Wave Height';
+			{% elif name == 'tps' %}
+				'Peak Wave Period';
+			{% elif name == 'wvel' %}
+				'Wind Speed';
+			{% else %}
+				''
+			{% endif %}
+		return layer_text
+	}
+	</script>
+</head>
+<!--///////////////////////////////////////////////////-->
+<body>
+<div class="info" align="center">
+
+	<div><b><script type="text/javascript">
+	document.write(layer_text() + ' ({{unit}})')</script></b></div>
+   
+    <div style="padding-top:90px;text-align:center; border-top:5px solid #FFF" >
+        <p>No information available at this location.</p>
+    </div>
+
+  <div style="font-size:11px; height:24px; margin-left:5px">
+
+		<div style="position:absolute; bottom:0;right:5px; ">
+		{% if requested_info.grid_datum != 'msl' %}{% if requested_info.surfheight != None and requested_info.surfheight != '' and requested_info.surfheight != 0 %}MSL is
+			<script type="text/javascript">
+			document.write(
+				{% if unit == 'ft' %}
+					({{requested_info.surfheight}}*3.28083).toFixed(3) + " ft"
+				{% else %}
+					{{requested_info.surfheight}}.toFixed(3) + " m"
+				{% endif %}
+				);
+				</script>
+			{% if '-' in requested_info.surfheight %}below{% else %}above{% endif %} NAVD88.{% endif %}
+		{% endif %}
+		</div>
+        {% if cls != None %}
+        <div style="position:absolute; bottom:0;left:5px">
+			ADCIRC node: {{queryid}} {% if cls == 0 %} <span class="red">wet{% else %}dry{% endif %}</span>. 
+        {% endif %}
+
+            <script type="text/javascript">
+            function addCommas(nStr)
+            {
+                nStr += '';
+                x = nStr.split('.');
+                x1 = x[0];
+                x2 = x.length > 1 ? '.' + x[1] : '';
+                var rgx = /(\d+)(\d{3})/;
+                while (rgx.test(x1)) {
+                    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+                }
+                return x1 + x2;
+            }
+		document.write(
+			{% if bathymetry != None %}
+				"Elevation: " +
+				//m to ft
+				{% if unit == 'ft' %}
+					addCommas(({{bathymetry}}*3.28083*(-1)).toFixed(2)) + " ft"
+				{% else %}
+					addCommas(({{bathymetry}}*(-1)).toFixed(2)) + " m"
+				{% endif %}
+			{% else %}
+				"<span style='color:#CC0000'><b>not available.</b></span>"
+			{% endif %}
+		);
+		</script>
+		{% if bathymetry > 0 %}below{% else %}above{% endif %}
+			{% if requested_info.grid_datum == 'msl' %}MSL{% else %}NAVD88{% endif %}.
+        </div>
+   </div>     
+      <!--{{error}}
+        {% autoescape off %}{{url}}{% endautoescape %}-->
+   </div> 
+</body>
+
+</html> 

@@ -1,0 +1,12 @@
+{% extends 'accounts/base.html' %}
+
+{% block head %}
+	<title>Logout</title>
+{% endblock head %}
+
+{% block body %}
+	<div class="headline">Logout</headline>
+	<div class="descr">You have succesfully logged out.</div>
+	<div><a href="{% url 'login' %}" ><button class="btn_login" type="submit">Login</button></a></div>
+	<div class="cancel"><a href="{% url 'home' %}" ><button class="btn_pub">Continue with public website</button></a></div>
+{% endblock body %}

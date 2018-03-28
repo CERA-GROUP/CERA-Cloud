@@ -1,0 +1,19 @@
+{% extends 'accounts/base.html' %}
+
+{% block head %}
+<title>User Profile CERA - Coastal Emergency Risks Assessment</title>
+{% endblock head %}
+
+{% block body %}
+<div class="headline">Change Profile</div>
+
+<div class="helptext">Username:<span style="color:#555"><b> {{user}}</b></span></div>
+<div class="helptext">This field cannot be edited. Please <a href="mailto:ckaiser@cct.lsu.edu">contact us</a> for a username change.</div>
+    <form method="post">
+        {% csrf_token %} <!--cross site request forgery-->
+        {{ user_form.as_p }} <!--renders django form as paragraph-->
+        {{ profile_form.as_p }} <!--renders django form as paragraph-->
+        <button class="btn_login" type="submit">Save</button>
+    </form>
+	<div><a href="/cerarisk/"><button class="btn_cancel">Go back to website</button></a></div>
+{% endblock body %}

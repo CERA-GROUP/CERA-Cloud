@@ -1,0 +1,5 @@
+{% for y in allyears %}
+	{  "adcrun_year" : "{{y.year}}" }
+{% endfor %}
+{ "requested_year" : {{requested_year.year}} }
+

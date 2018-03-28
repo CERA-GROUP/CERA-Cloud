@@ -1,0 +1,1 @@
+{% load tz %}{% if tz == "UTC" %}{% timezone "UTC" %}{% include "mobile/cera_child.json" %}{% endtimezone %}{% endif %}{% if tz == "CDT" %}{% timezone "US/Central" %}{% include "mobile/cera_child.json" %}{% endtimezone %}{% endif %}{% if tz == "EDT" %}{% timezone "US/Eastern" %}{% include "mobile/cera_child.json" %}{% endtimezone %}{% endif %}

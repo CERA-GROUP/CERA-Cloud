@@ -1,0 +1,20 @@
+{% load tz %}ASGS/CERA user community,
+
+This is an automated message from the Coastal Emergency Risks Assessment (CERA).
+New ADCIRC model run results from the ADCIRC Surge Guidance System (ASGS) 
+have been posted on the CERA{% if asgs == 'dev' %}-Developer{% elif asgs == 'pr' %}-Puerto Rico{% elif asgs == 'ri' %}-Rhode Island{% endif %} website.
+
+	{% spaceless %}ASGS model run start time: {% if asgs == 'dev' or asgs == 'pro' %}{% timezone "UTC" %}{{info.adcrun_daytime_utc|date:'d-M-Y, H:i T'}}{% endtimezone %}{% endif %}{% if asgs == 'nc' or asgs == 'ri' %}{% timezone "US/Eastern" %}{{info.adcrun_daytime_utc|date:'d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% if asgs == 'ng' %}{% timezone "US/Central" %}{{info.adcrun_daytime_utc|date:'d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% if asgs == 'pr' %}{% timezone "America/Puerto_Rico" %}{{info.adcrun_daytime_utc|date:'d-M-Y, fA T'}}{% endtimezone %}{% endif %}
+	ADCIRC grid: {{info.get_grid_display}}
+	{% spaceless %}{% if info.remark %}{% autoescape off %}{{info.remark}}{% endautoescape off %}{% endif %}
+	{% if asgs == 'dev' %}ASGS instance: {{info.asgs_instance}}{% endif %}{% endspaceless %}{% endspaceless %}
+
+Please visit: {% if asgs == 'dev' %}{{link_dev}}{% elif asgs == 'pr' %}{{link_pr}}{% elif asgs == 'ri' %}{{link_ri}}{% elif asgs == 'pro' or asgs == 'nc' or asgs == 'ng'%}{{link_cera}}{% endif %}
+
+You may need to refresh your web browser to see the latest results.
+
+
+
+
+
+

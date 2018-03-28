@@ -1,0 +1,13 @@
+"alltracks" (advisory, advisoryid, tracknr, percent, trackid): <br />
+{% for t in alltracks %}
+{{t.advisory}} ({{t.advisory.id}}): {{t.track}} {{t.mod_percent}} ({{t.id}})<br />
+{% endfor %}<br /> 
+"requested_track": {{requested_track.advisory}} ({{requested_track.advisory.id}}): {{requested_track.track}} ({{requested_track.id}})<br /><br />
+"tracks_requested_advisory": <br />
+{% for t in tracks %}
+{{t.advisory}} ({{t.advisory.id}}): {{t.track}} ({{t.id}})<br />
+{% endfor %}<br /> 
+"alladvisories": <br />
+{% for a in alladvisories %}
+{{a.advisory}} ({{a.id}})<br />
+{% endfor %}<br /> 

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head> 
+    <style type="text/css">
+		.info {
+			width:526px;
+			height:386px;
+			font-family:Arial, Helvetica, sans-serif;
+			font-size: 12px;
+			background-color:#EAE6EA;
+			line-height:24px;
+			position:relative; /*to position the station link at the bottom*/
+			overflow: hidden;
+			margin:0;padding:0
+		}
+	</style>
+</head>
+<!--///////////////////////////////////////////////////-->
+<body>
+<div class="info" align="center">
+
+    <div><b>{{station.stationname}}, {{station.state}}</b> ({{station.stationid}}{% if station.agencyname %}, {{station.agencyname}}{% endif %}){% if station.alt_stationid and station.alt_stationid != '' %}<span style="color:#999"> ({{station.alt_stationid}}{% endif %}{% if station.alt_agencyname and station.alt_agencyname != '' %}, {{station.alt_agencyname}}){% endif %}</span></div>
+    
+    <div style="color:#900;padding-top:60px;text-align:center">
+    No predicted or real-time water level information available at this station.
+    </div>
+        
+    <div style="font-size:11px; height:30px; position:absolute; bottom:0; margin-left:5px">
+    	{% if station.realtimeurl %}<span style="float:left">
+        	Gage station website: <a href="{{realtimeurl}}" target="_blank">{{station.agencyname}}</a>
+        </span>{% endif %}
+        <!--{{error}}-->
+    </div>
+    
+</div>
+</body> 
+</html> 
+

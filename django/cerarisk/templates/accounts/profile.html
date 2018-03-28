@@ -1,0 +1,52 @@
+{% extends 'accounts/base.html' %}
+
+{% block head %}
+<title>User Profile CERA - Coastal Emergency Risks Assessment</title>
+{% endblock head %}
+
+
+{% block body %}
+<div class="headline">Profile</div>
+
+<div class="pagelink"><a href="{% url 'password_change' %}">Change your password</a></div>
+<br />
+<table width="350" border="0">
+	<tr>
+		<td class="helptext"><b>Username:</b></td>
+		<td class="helptext">{{user}}</td>
+	</tr>
+	<tr>
+		<td><b>First Name:</b></td>
+		<td>{{user.first_name|default:"---"}}</td>
+	</tr>
+	<tr>
+		<td><b>Last Name:</b></td>
+		<td>{{user.last_name|default:"---"}}</td>
+	</tr>
+	<tr>
+		<td><b>Email address:</b></td>
+		<td>{{user.email}}</td>
+	</tr>
+	<tr>
+		<td><b>Organization:</b></td>
+		<td>{{user.userprofile.organization|default:"---"}}</td>
+	</tr>
+	<tr>
+		<td><b>City:</b></td>
+		<td>{{user.userprofile.city|default:"---"}}</td>
+	</tr>
+	<tr>
+		<td><b>State:</b></td>
+		<td>{{user.userprofile.get_state_display|default:"---"}}</td>
+	</tr>
+	<tr>
+		<td><b>Phone:</b></td>
+		<td>{{user.userprofile.phone|default:"---"}}</td>
+	</tr>
+</table>
+<br />
+<a href="{% url 'profile_edit' %}"><button class="btn_login">Edit Profile</button></a>
+<div class="cancel"><a href="/cerarisk/"><button class="btn_cancel">Go back to website</button></a></div>
+
+{% endblock body %}
+

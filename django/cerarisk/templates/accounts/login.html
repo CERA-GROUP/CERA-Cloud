@@ -1,0 +1,22 @@
+{% extends 'accounts/base.html' %}
+
+{% block head %}
+	<title>Login CERA - Coastal Emergency Risks Assessment</title>
+{% endblock head %}
+
+{% block body %}
+	<div class="headline">Login</div>
+	<div class="descr" style="margin-bottom:0">Don't have a login? </div>
+	<div class="descr2">If you work for a federal or state agency, emergency management or response, or a research institution, please <a href="{% url 'signup' %}" >contact us</a> to obtain a login.</div>
+	<form action="{% url 'login' %}" method="post" >
+		{% csrf_token %} <!--cross site request forgery-->
+		{{ form.as_p }} <!--renders django form as paragraph-->
+		<div class="descr1" style="margin-bottom:10px; text-align:right"><a href="{% url 'password_reset' %}">Forgot your password?</a></div>
+		<button class="btn_login" type="submit">Login</button>
+	</form>
+	{% if next %}
+	<a href="{% url 'home' %}?{{next}}" ><button class="btn_pub">Cancel &amp; continue with public website</button></a>
+	{% else %}
+	<a href="{% url 'home' %}" ><button class="btn_pub">Cancel &amp; continue with public website</button></a>
+	{% endif %}
+{% endblock body %}

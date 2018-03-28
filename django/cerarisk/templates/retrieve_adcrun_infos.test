@@ -1,0 +1,14 @@
+{% load tz %}{% localtime off %}{% load hindcast %}
+{{requested_info}}, tracknr = {{requested_info.track_id.track}}, tz = {{time_zone}}</br>
+allinfos <br/>
+{% for t in allinfos %}
+"value" : {% if time_zone == "utc" %}{% timezone "UTC" %}"{{t.adcrun_daytime_utc}}"{% endtimezone %}{% endif %}{% if time_zone == "cdt" %}{% timezone "US/Central" %}"{{t.adcrun_daytime_utc}}"{% endtimezone %}{% endif %}{% if time_zone == "edt" %}{% timezone "US/Eastern" %}"{{t.adcrun_daytime_utc}}"{% endtimezone %}{% endif %}, {{t.adcrun_daytime_utc}} UTC{% ifequal t.adcrun_daytime_utc requested_info.adcrun_daytime_utc %}, "selected" : true{% endifequal %} 
+{% if not forloop.last %},{% endif %} ID: {{t.id}}{% if t.has_adv %}, track: {{t.track_id.track}}{% endif %}</br>
+{% endfor %}
+
+alltimes <br/>
+{% for t in alltimes %}
+"value" : {% if time_zone == "utc" %}{% timezone "UTC" %}"{{t.adcrun_daytime_utc}}"{% endtimezone %}{% endif %}{% if time_zone == "cdt" %}{% timezone "US/Central" %}"{{t.adcrun_daytime_utc}}"{% endtimezone %}{% endif %}{% if time_zone == "edt" %}{% timezone "US/Eastern" %}"{{t.adcrun_daytime_utc}}"{% endtimezone %}{% endif %}, {{t.adcrun_daytime_utc}} UTC{% ifequal t.adcrun_daytime_utc requested_info.adcrun_daytime_utc %}, "selected" : true{% endifequal %}  
+{% if not forloop.last %},{% endif %}</br>
+{% endfor %}
+{% endlocaltime %}

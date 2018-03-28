@@ -1,0 +1,24 @@
+<div>
+  <div id="infoContent">
+	  <div style="line-height:20px">
+		ADCIRC server: <span class="infotext"> {{requested_info.adcirc_datahost}}</span><br />
+		{% if requested_info.ncpu %}Number CPU: <span class="infotext"> {{requested_info.ncpu}}</span><br />{% endif %}
+		ASGS instance: <span class="infotext">{{requested_info.asgs_instance}}</span><br />
+		ADCIRC Grid: <span class="infotext">{{requested_info.grid}}</span><br />
+		Wind Model: <span class="infotext">{{requested_info.windmodel}}</span><br />
+		Sea Surface Height above Geoid: <span class="infotext">{{requested_info.surfheight}}</span><br />
+		Minimum Water Depth (H0): <span class="infotext">{{requested_info.h0}}</span><br />
+		{% if requested_info.msboundflux %}MS River Boundary Condition: <span class="infotext">{{requested_info.msboundflux}}</span><br />{% endif %}
+		{% if requested_info.msboundid %} MS River Boundary Gage ID: <span class="infotext">{{requested_info.msboundid}}</span><br />{% endif %}
+		{% if requested_info.atboundflux %}AT River Boundary Condition: <span class="infotext">{{requested_info.atboundflux}}</span><br />{% endif %}
+		{% if requested_info.atboundid %}AT River Boundary Gage ID: <span class="infotext">{{requested_info.atboundid}}</span><br />{% endif %}
+		{% if requested_info.remark %}Remark: <span class="infotext">{% autoescape off %}{{requested_info.remark}}{% endautoescape off %}</span><br />{% endif %}
+		{% if requested_info.description %}Description: <span class="infotext">{% autoescape off %}{{requested_info.description}}{% endautoescape off%}</span><br />{%endif %}
+		CERA server: <span class="infotext">{{requested_info.get_wmsserver_display}}</span><br />
+		CERA ID: <span class="infotext">{{requested_info.id}}</span><br />
+		CERA version: <span class="infotext">{{requested_info.program_version}}</span><br />
+                CERA ASGS: <span class="infotext">{% if requested_info.asgs_pro %}pro {% endif %}{% if requested_info.asgs_nc %}nc {% endif %}{% if requested_info.asgs_ng %}ng {% endif %}{% if requested_info.asgs_ri %}ri {% endif %}{% if requested_info.asgs_pr %}pr {% endif %}</span><br />
+		Website: <span class="infotext">{% if requested_info.website_region == 'nc' %}nc{% elif requested_info.website_region == 'ng' %}ng{% else %}nc_ng{% endif %}</span>
+	  </div>
+  </div>
+</div>

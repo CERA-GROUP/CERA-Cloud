@@ -1,0 +1,7 @@
+tz: {{time_zone}}
+asgs: {{asgs}}
+{% for d in alldays %}
+	{  "adcrun_day" : "{{d.adcrun_day|date:"d-M-Y, H:i T"}}", "has_adv" : "{{d.has_adv}}" }
+{% endfor %}
+{ {{requested_day.adcrun_day}}, {{requested_day.has_adv}} }
+

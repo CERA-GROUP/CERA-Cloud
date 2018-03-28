@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head> 
+    <style type="text/css">
+		.info {
+			width:270px;
+			height:160px;
+			font-family:Arial, Helvetica, sans-serif;
+			font-size: 12px;
+			background-color:#EAE6EA;
+			line-height:16px;
+			position: relative;
+			overflow: hidden;
+			margin:0;padding:0
+		}
+	</style>
+</head>
+<!--///////////////////////////////////////////////////-->
+<body>
+<div class="info" align="center">
+
+    <div style="padding:5px 0"><b>ADCIRC grid elevation (ft / m)<br />for ADCIRC grid node ID: {{queryid}}</b></div>
+
+    <div style="background-color:#FFF;line-height:80px">
+    <script type="text/javascript">
+	function addCommas(nStr)
+	{
+		nStr += '';
+		x = nStr.split('.');
+		x1 = x[0];
+		x2 = x.length > 1 ? '.' + x[1] : '';
+		var rgx = /(\d+)(\d{3})/;
+		while (rgx.test(x1)) {
+			x1 = x1.replace(rgx, '$1' + ',' + '$2');
+		}
+		return x1 + x2;
+	}
+	document.write(
+		{% if bathymetry != None %}
+			//m to ft
+			addCommas(({{bathymetry}}*3.28083*(-1)).toFixed(1)) + " ft (" + addCommas(({{bathymetry}}*(-1)).toFixed(1)) + " m)"
+		{% else %}
+			"not available"
+		{% endif %} 	
+	);
+	</script>
+    </div>
+
+    <!--{{error}}-->
+        
+   <div style="font-size:11px;padding:4px;height:30px">
+        ADCIRC grid node classified as: {% if cls == 0 %}'wet'{% endif %}{% if cls == 1 or cls == 2 %}'dry'{% endif %}<br />(relative to {% if requested_info.grid_datum == 'msl' %}Mean Sea Level{% else %}NAVD88{% endif %}).
+   </div>
+
+</body> 
+</html> 

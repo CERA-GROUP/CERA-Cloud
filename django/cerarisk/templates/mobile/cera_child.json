@@ -1,0 +1,37 @@
+{% load tz %}{
+	"date" : { 
+		"value_utc" : {% timezone "UTC" %}"{{requested_info.adcrun_daytime_utc|date:'YmdHi'}}"{% endtimezone %}, "text_tz" : {% if tz == "UTC" %}{% timezone "UTC" %}"{{requested_info.adcrun_daytime_utc|date:'d-M-Y H:i T'}}"{% endtimezone %}{% endif %}{% if tz == "CDT" %}{% timezone "US/Central" %}"{{requested_info.adcrun_daytime_utc|date:'d-M-Y fA T'}}"{% endtimezone %}{% endif %}{% if tz == "EDT" %}{% timezone "US/Eastern" %}"{{requested_info.adcrun_daytime_utc|date:'d-M-Y fA T'}}"{% endtimezone %}{% endif %}
+	},
+	"enddate" : { 
+		"value_utc" : {% timezone "UTC" %}"{{requested_info.adcrun_enddaytime_utc|date:'YmdHi'}}"{% endtimezone %}, "text_tz" : {% if tz == "UTC" %}{% timezone "UTC" %}"{{requested_info.adcrun_enddaytime_utc|date:'d-M-Y H:i T'}}"{% endtimezone %}{% endif %}{% if tz == "CDT" %}{% timezone "US/Central" %}"{{requested_info.adcrun_enddaytime_utc|date:'d-M-Y fA T'}}"{% endtimezone %}{% endif %}{% if tz == "EDT" %}{% timezone "US/Eastern" %}"{{requested_info.adcrun_enddaytime_utc|date:'d-M-Y fA T'}}"{% endtimezone %}{% endif %}
+	},
+	"adcircrun_id" : { 
+		"value" : {{requested_info.id}}, "is_storm" : {% if requested_info.has_adv %}true{% else %}false{% endif %} 
+	},
+	"all_tracks" : [ {% if alltracks %}{% for t in alltracks %}{% if t.asgs_ng %} 
+		{ "adcircrun_id" : {{t.id}}, "trackid" : {{t.track_id.id}}, "track" : "{{t.track_id.track}}_{{t.track_id.mod_percent}}", "text": "{{t.track_id.get_track_info_text}}, {% ifequal t.id requested_info.id %}", "selected" : true}{% endifequal %}{{requested_info.asgs_ng}}{% if not forloop.last %},{% endif %}
+		{% endif %}{% endfor %}{% endif %} 
+	],
+	"storm": { {% if alltracks %}
+		 "advisory" : {{requested_info.track_id.advisory.advisory}}, "advisory_time_utc" :{% timezone "UTC" %}"{{requested_info.track_id.advisory.adv_time_utc|date:'YmdHi'}}"{% endtimezone %}, "text_adv_time" : {% if tz == "utc" %}{% timezone "UTC" %}{{requested_info.track_id.advisory.adv_time_utc|date:'d-M-Y H:i T'}}{% endtimezone %}{% endif %}{% if tz == "CDT" %}{% timezone "US/Central" %}{{requested_info.track_id.advisory.adv_time_utc|date:'D, d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% if tz == "EDT" %}{% timezone "US/Eastern" %}{{requested_info.track_id.advisory.adv_time_utc|date:'D, d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% if tz == "ast" %}{% timezone "America/Puerto_Rico" %}{{requested_info.track_id.advisory.adv_time_utc|date:'D, d-M-Y, fA T'}}{% endtimezone %}{% endif %}, "storm" : "{{requested_info.track_id.advisory.storm.stormname}}"{% endif %} 
+	},
+	"grid" : {
+		"name" : "{{requested_info.get_grid_display}}",
+		"text" : "{{requested_info.grid_region_text}}", 
+		"bbox" : { "xmin" : -97.86, "ymin" : 7.90, "xmax" : -60.03, "ymax" : 45.84 }
+	},
+	{% if layers %}"layers":{ {% for l in layers %}
+		"{{l}}": {
+			"status": "true",
+			"text":{% if l == "maxelevshp" %}"Maximum Water Height above {% if requested_info.legend == "ng" %}NAVD88" {% else %}MSL"{% endif %}{% endif %}{% if l == "maxinunshp" %}"Maximum Inundation Depth above Ground"{% endif %}{% if l == "maxwvelshp" %}"Maximum Wind Speed"{% endif %}{% if l == "maxhsignshp" %}"Maximum Significant Wave Height"{% endif %}{% if l == "maxtpsshp" %}"Maximum Peak Wave Period"{% endif %}{% if l == "elevshp" %}"Water Height Time Series above {% if requested_info.legend == "ng" %}NAVD88" {% else %}MSL"{% endif %}{% endif %}{% if l == "inunshp" %}"Inundation Depth Time Series above Ground"{% endif %}{% if l == "wvelshp" %}"Wind Speed Time Series"{% endif %}{% if l == "hsignshp" %}"Significant Wave Height Time Series"{% endif %}{% if l == "tpsshp" %}"Peak Wave Period Time Series"{% endif %}{% if l == "hydro" %}"Gage Stations"{% endif %}{% if l == "trackline" %}"{{requested_info.track_id.get_track_info_text}}"{% endif %}
+		}{% if not forloop.last %},{% endif %}{% endfor %}
+	},{% endif %}
+	{% if first_timestep %}"first_timestep": "{{first_timestep}}"{% endif %},
+	"grid" : "{{requested_info.get_grid_display}}",
+	"data_host" : "{{requested_info.get_wmsserver_display}}",
+	"data_host_cache" : "{{requested_info.get_data_host_cache_display}}",
+	"version" : {{requested_info.program_version}},
+	"nr_cache_hosts": {{requested_info.nr_cacheserver}},
+	"legend": {% if alltracks %}"{{requested_info.legend}}{% else %}"nostorm"{% endif %}
+}
+

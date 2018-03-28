@@ -1,0 +1,1166 @@
+{% load tz %}
+<!-- legend until CERA version 6-->
+<!--class 'treeaccordion' determines one independent accordion in the legend (function load_legend in cera.html)-->
+
+<div class="treeaccordion">
+<!--/////////////////////////////////////////-->
+    <h3><a href="#maptype">Background Map</a></h3>
+    <div>
+    	<div class="radio">
+        	<input type="radio" name="maptype" value="roadmap" onclick="javascript: setMapTypeId('custom_roadmap')"/>
+            <label>Road Map</label>
+        </div>
+        <div class="radio">
+        	<input type="radio" name="maptype" value="satellite" onclick="javascript: setMapTypeId(google.maps.MapTypeId.SATELLITE)"/>
+            <label>Satellite</label>
+        </div>
+    	<div class="radio">
+        	<input type="radio" name="maptype" value="hybrid" onclick="javascript: setMapTypeId(google.maps.MapTypeId.HYBRID)"/>
+            <label>Hybrid</label>
+        </div>
+    	<div class="radio">
+        	<input type="radio" name="maptype" value="terrain" onclick="javascript: setMapTypeId(google.maps.MapTypeId.TERRAIN)"/>
+            <label>Terrain</label>
+        </div>
+	</div>
+
+</div><!--end treemenu-->
+
+<!-- /////////////////////////////////////////-->
+{% if requested_info.has_adv or show_trackinvest or show_tracksub%}
+<div class="treeaccordion">
+
+    <h3><a href="#trackline">Tropical Cyclone Activity</a></h3>
+    <div>
+
+	{% if requested_info.has_adv %}
+		<div class="check">
+        	<input type="checkbox" name="layer1" value="trackline"/>
+            <label>
+            {% if requested_info.track_id.track == 't01' %}
+            	<a href="https://www.nhc.noaa.gov/cyclones/" target="_blank">NHC</a> Storm Track 
+			{% else %}
+            	Storm Track
+            {% endif %}
+            </label>
+            <span class="legend_sprite legend_info tooltip" 
+            title='
+            {% if requested_info.track_id.advisory.advisory == "999" %}
+            	Official best track provided by the National Hurricane Center
+            {% else %}
+                {% if requested_info.track_id.track == 't01' %}Official forecast track issued by the National Hurricane Center (NHC)
+                {% elif requested_info.track_id.track == 't02' %}{{requested_info.track_id.mod_percent}}% maximum wind speed compared to the official forecast track issued by the National Hurricane Center
+                {% elif requested_info.track_id.track == 't03' %}{{requested_info.track_id.mod_percent}}% over land speed compared to the official forecast track issued by the National Hurricane Center
+                {% elif requested_info.track_id.track == 't04' %}{{requested_info.track_id.mod_percent}}% veer left ({{requested_info.track_id.mod_percent|slice:"1:"}}% of the way between the official forecast track issued by the National Hurricane Center and the left edge of the cone of uncertainty)
+                {% elif requested_info.track_id.track == 't05' %}{{requested_info.track_id.mod_percent}}% veer right ({{requested_info.track_id.mod_percent|slice:"1:"}}% of the way between the official forecast track issued by the National Hurricane Center and the right edge of the cone of uncertainty)
+                {% elif requested_info.track_id.track == 't06' %}{{requested_info.track_id.mod_percent}}% maximum radius compared to the official forecast track issued by the National Hurricane Center
+                {% elif requested_info.track_id.track == 't07' %}Official forecast track issued by the National Hurricane Center National Hurricane Center with {{requested_info.track_id.mod_percent}}% maximum wind speed only
+                {% elif requested_info.track_id.track == 't08' %}Official forecast track issued by the National Hurricane Center with {{requested_info.track_id.mod_percent}}% constant maximum radius
+            	{% endif %}
+            {% endif %}
+            '>&nbsp;</span>
+		</div>
+        
+		{% if requested_info.track_id.track == 't02' %}<div class="storm_descr">({{requested_info.track_id.mod_percent}}% max. wind speed)</div>
+		{% elif requested_info.track_id.track == 't03' %}<div class="storm_descr">({{requested_info.track_id.mod_percent}}% over land speed)</div>
+	 	{% elif requested_info.track_id.track == 't04' %}<div class="storm_descr">({{requested_info.track_id.mod_percent}}% veer left)</div>
+ 	 	{% elif requested_info.track_id.track == 't05' %}<div class="storm_descr">({{requested_info.track_id.mod_percent}}% veer right)</div>
+		{% elif requested_info.track_id.track == 't06' %}<div class="storm_descr">({{requested_info.track_id.mod_percent}}% max. radius)</div>
+ 		{% elif requested_info.track_id.track == 't07' %}<div class="storm_descr">({{requested_info.track_id.mod_percent}}% max. wind speed only)</div>
+		{% elif requested_info.track_id.track == 't08' %}<div class="storm_descr">({{requested_info.track_id.mod_percent}}% constant max. radius)</div>
+	 	{% endif %}		
+            
+        <div class="top9 bottom5">
+        	<span class="legend_sprite trackline block"></span>
+        	<span title='Click a red or color-coded track point to display the time series map for the selected time' class="legend_sprite legend_info tooltip">&nbsp;</span>
+        </div>
+        <div>
+            <span class="legend_sprite track_outside block vertmiddle"></span>
+            <span class="left5">outside model
+            {% if requested_info.track_id.advisory.advisory == "999" %} hindcast{% else %} forecast{% endif %}</span>
+        </div>
+        <!--{% if timesteps %}
+        <p class="legend_desc">Move the mouse over a labeled track point to see the National Hurricane Center track info</p>
+        {% endif %}-->
+        {% if maintrack %}
+            <div class="top5">
+            <span class="legend_sprite track_main block vertmiddle"></span><input type="hidden" name="layer7" value="maintrack"/><span class="left5">NHC official forecast track</span><br/>
+            </div>
+        {% endif %}
+    {% endif %} <!-- end has_adv-->
+
+    {% if show_trackinvest or show_tracksub %}
+        {% if requested_info.has_adv %}<div class="check top5">{% else %}<div class="check">{% endif %}
+        	<input type="checkbox" name="layer11" value="invest_or_subtrack"/>
+        	<label>{% if show_tracksub %}{% if requested_info.has_adv %}other {% endif %}storm tracks{% endif %}{% if show_trackinvest and show_tracksub %}<div style="margin:-3px 0 3px 0;line-height:normal"><span class="left24">and </span>{% endif %}{% if show_trackinvest %}areas of investigation{% endif %}</div></label>
+        </div>
+    {% endif %}  <!-- end show_trackinvest or show_tracksub-->
+
+	</div>
+
+</div><!--end treemenu-->
+{% endif %}
+
+<!-- SHP /////////////////////////////////////////-->
+{% if show_maxelevshp or show_elevshp or show_maxinunshp or show_inunshp or show_maxhsignshp or show_hsignshp or show_maxtpsshp or show_tpsshp or show_maxwveshp or show_wvelshp %}
+<div class="treeaccordion">
+
+	<!--elevshp/////////////////////////////////////////-->
+    {% if show_maxelevshp or show_elevshp %}
+
+        <h3><a href="#elev">Water Height above
+        {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}
+        </a></h3>
+
+     	<div id="node_elev">
+
+        {% if show_maxelevshp %}
+            <div class="radio">
+                <input type="radio" name="layer0" value="maxelevshp" onclick="javascript:selectCheck(this, map)"/>
+                <label>Maximum Water Height</label>
+        		<span title='
+                {% if requested_info.track_id.advisory.advisory == "999" %}
+                    The highest water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicted within the entire model hindcast time range.
+                {% else %}
+                    The highest water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicts to occur within the entire model forecast time range.
+                {% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+            </div>
+    	{% endif %}
+
+        {% if show_elevshp %}
+		{% if is_authenticated %}
+            <div class="radio">
+    			<input type="radio" name="layer0" value="elevshp" onclick="javascript:selectCheck(this, map)"/>
+				<label>Water Height at Date/Time</label>
+        		<span title='
+            	{% if requested_info.track_id.advisory.advisory == "999" %}
+                        The water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicted at the selected time.
+           		{% else %}
+                        The water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicts to occur at the selected time.
+                    {% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+    		</div>
+
+            <div id="timesteps_elevshp" class="tooltip" title="Click here to select a date and time">
+                <!--name, id must be 'timestep_<layername>' -->
+                <select name="timestep_elevshp" id="timestep_elevshp" >
+                    <option value=""></option>
+                </select>
+                </div>
+
+       	{% endif %}
+		{% endif %} <!-- authentication-->
+
+    	{% if selected_layer == "maxelevshp" or selected_layer == "elevshp" %}
+        	<div class="top10" align="center">
+                {% if requested_info.has_adv %}
+                        {% if requested_info.legend == 'nc' %}
+                            <img class="legendimage" name="/{{basepath}}/_legend/v6/elev_{{requested_info.grid_datum}}_atlantic.png" alt="" width="105" height="287" />
+                    	{% elif requested_info.legend == 'ng' %}
+                            <img class="legendimage" name="/{{basepath}}/_legend/v6/elev_{{requested_info.grid_datum}}_gulf.png" alt="" width="105" height="287" />
+                        {% endif %}
+                       <!-- {% if requested_info.legend == 'pr'%}
+                            <img class="legendimage" name="/{{basepath}}/_legend/elev_{{requested_info.grid_datum}}_puerto.png" alt="" width="116" height="287" />
+                       {% endif %}-->
+                {% else %}
+                       <!--{% if requested_info.legend == 'pr'%}
+                            <img class="legendimage" name="/{{basepath}}/_legend/elev{{requested_info.grid_datum}}_nostorm_puerto.png" alt="" width="116" height="265" />
+                       {% else %}-->
+                            <img class="legendimage" name="/{{basepath}}/_legend/elev_{{requested_info.grid_datum}}_nostorm.png" alt="" width="110" height="287" />
+                       <!--{% endif %} -->
+                {% endif %}
+   		 	</div>
+    	{% endif %}
+
+        </div>
+    {% endif %}   <!--end elevshp-->
+
+    <!--inunshp/////////////////////////////////////////-->
+    {% if show_maxinunshp or show_inunshp %}
+
+        <h3><a href="#inun">Inundation Depth above Ground</a></h3>
+
+        <div id="node_inun">
+        	<p class="legend_desc">Colors over land mean water height above ground. Colors over water mean water height above Mean Sea Level.</p>
+
+            {% if show_maxinunshp %}
+                <div class="radio">
+                    <input type="radio" name="layer0" value="maxinunshp" onclick="javascript:selectCheck(this, map)"/>
+                    <label>Maximum Inundation</label>
+                    <span title='
+                    {% if requested_info.track_id.advisory.advisory == "999" %}
+                    		The highest inundation depth that the ADCIRC model predicted within the entire model hindcast time range.
+                    {% else %}
+                    		The highest inundation depth that the ADCIRC model predicts to occur within the entire model forecast time range.
+                		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+                </div>
+    		{% endif %}
+
+			{% if is_authenticated %}
+            {% if show_inunshp %}
+                <div class="radio">
+                    <input type="radio" name="layer0" value="inunshp" onclick="javascript:selectCheck(this, map)"/>
+                    <label>Inundation at Date/Time</label>
+                    <span title='
+                {% if requested_info.track_id.advisory.advisory == "999" %}
+                    		The inundation depth that the ADCIRC model predicted at the selected time.
+                {% else %}
+                    		The inundation depth that the ADCIRC model predicts to occur at the selected time.
+                		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+                </div>
+                
+                <div id="timesteps_inunshp" class="tooltip" title="Click here to select a date and time">
+                    <!--name, id must be 'timestep_<layername>' -->
+                    <select name="timestep_inunshp" id="timestep_inunshp">
+                        <option value=""></option>
+                    </select>
+                    </div>
+
+                <div id="sliders_inunshp">
+                    <div id="slider_text_inunshp" class="timestep_sliderbar_text">Current Date and Time:</div>
+                    <div id="slider_inunshp"></div>
+                </div>
+
+                <div class="animation">
+                    <button name="inunshp" class="animation_text tooltip" title="Click here to start the animation">Start Animation</button>
+                </div>
+            {% endif %}
+			{% endif %} <!-- authentication-->
+
+            {% if selected_layer == "maxinunshp" or selected_layer == "inunshp" %}
+                <div class="top12" align="center">
+                    {% if requested_info.has_adv %}
+                        {% if requested_info.legend == 'nc' or requested_info.legend == 'pr' %}
+                        <!-- no change for 'nc' V6/V7 -->
+                            <img class="legendimage" name="/{{basepath}}/_legend/inun_atlantic.png" alt="" width="105" height="265" />
+                        {% else %}
+                            <img class="legendimage" name="/{{basepath}}/_legend/v6/inun_gulf.png" alt="" width="105" height="265" />
+                        {% endif %}
+                    {% else %}
+                            <img class="legendimage" name="/{{basepath}}/_legend/inun_nostorm.png" alt="" width="111" height="265" />
+                    {% endif %}
+                </div>
+            {% endif %}
+
+        </div>
+    {% endif %}
+
+    <!--hsignshp/////////////////////////////////////////-->
+	{% if is_authenticated %}
+    {% if show_maxhsignshp or show_hsignshp %}
+
+        <h3><a href="#hsign">Significant Wave Height</a></h3>
+
+        <div id="node_hsign">
+               <p class="legend_desc">Average height of the largest 1/3 of the waves, measured from trough to crest.</p>
+
+            {% if show_maxhsignshp %}
+                <div class="radio">
+                    <input type="radio" name="layer0" value="maxhsignshp" onclick="javascript:selectCheck(this, map)"/>
+                    <label>Maximum Wave Height</label>
+                    <span title='
+                    {% if requested_info.track_id.advisory.advisory == "999" %}
+                    		The highest significant wave height (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicted within the entire model hindcast time range.
+                    {% else %}
+                    		The highest significant wave height (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicts to occur within the entire model forecast time range.
+                		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+                </div>
+            {% endif %}
+
+            {% if show_hsignshp %}
+                <div class="radio">
+                    <input type="radio" name="layer0" value="hsignshp" onclick="javascript:selectCheck(this, map)"/>
+                    <label> Wave Height at Date/Time</label>
+                    <span title='
+                {% if requested_info.track_id.advisory.advisory == "999" %}
+                    		The significant wave height (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicted at the selected time.
+                {% else %}
+                    		The significant wave height (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicts to occur at the selected time.
+                		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+                </div>
+
+                <div id="timesteps_hsignshp" class="tooltip" title="Click here to select a date and time">
+                    <!--name, id must be 'timestep_<layername>' -->
+                    <select name="timestep_hsignshp" id="timestep_hsignshp">
+                        <option value=""></option>
+                    </select>
+                    </div>
+
+                <div id="sliders_hsignshp">
+                    <div id="slider_text_hsignshp" class="timestep_sliderbar_text">Current Date and Time:</div>
+                    <div id="slider_hsignshp"></div>
+                </div>
+                
+                	<div class="animation">
+                    <button name="hsignshp" class="animation_text tooltip" title="Click here to start the animation">Start Animation</button>
+                </div>
+            {% endif %}
+
+    		{% if selected_layer == "maxhsignshp" or selected_layer == "hsignshp" %}
+                <div class="top12" align="center">
+                    {% if requested_info.has_adv %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/hsign_{{requested_info.grid_datum}}.png" alt="" width="105" height="287" />
+                    {% else %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/hsign_{{requested_info.grid_datum}}_nostorm.png" alt="" width="105" height="287" />
+                    {% endif %}
+                </div>
+    		{% endif %}
+
+        </div>
+    {% endif %}
+	{% endif %} <!-- authentication-->
+
+    <!--tpsshp/////////////////////////////////////////-->
+	{% if is_authenticated %}
+    {% if show_maxtpsshp or show_tpsshp %}
+
+    	<h3><a href="#tps">Peak Wave Period</a></h3>
+
+    	<div id="node_tps">
+        <p class="legend_desc">Measure of how often waves will impact the coast (wave frequency)</p>
+
+            {% if show_maxtpsshp %}
+                <div class="radio">
+                    <input type="radio" name="layer0" value="maxtpsshp" onclick="javascript:selectCheck(this, map)"/>
+                    <label>Maximum Wave Period</label>
+                    <span title='
+                    {% if requested_info.track_id.advisory.advisory == "999" %}
+                    		The highest peak wave period that the ADCIRC model predicted within the entire model hindcast time range.
+                    {% else %}
+                    		The highest peak wave period that the ADCIRC model predicts to occur within the entire model forecast time range.
+                		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+                </div>
+            {% endif %}
+
+            {% if show_tpsshp %}
+                <div class="radio">
+                    <input type="radio" name="layer0" value="tpsshp" onclick="javascript:selectCheck(this, map)"/>
+                    <label>Wave Period at Date/Time</label>
+                    <span title='
+                {% if requested_info.track_id.advisory.advisory == "999" %}
+                    		The peak wave period that the ADCIRC model predicted at the selected time.
+                {% else %}
+                    		The peak wave period that the ADCIRC model predicts to occur at the selected time.
+                		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+                </div>
+
+                <div id="timesteps_tpsshp" class="tooltip" title="Click here to select a date and time">
+                    <!--name, id must be 'timestep_<layername>' -->
+                    <select name="timestep_tpsshp" id="timestep_tpsshp">
+                        <option value=""></option>
+                    </select>
+                    </div>
+
+                <div id="sliders_tpsshp">
+                    <div id="slider_text_tpsshp" class="timestep_sliderbar_text">Current Date and Time:</div>
+                    <div id="slider_tpsshp"></div>
+                </div>
+
+                	<div class="animation">
+                    <button name="tpsshp" class="animation_text tooltip" title="Click here to start the animation">Start Animation</button>
+  				</div>
+
+            {%endif%}
+
+    		{% if selected_layer == "maxtpsshp" or selected_layer == "tpsshp" %}
+                <div class="top12" align="center">
+                    {% if requested_info.has_adv %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/tps.png" alt="" width="82" height="265" />
+                    {% else %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/tps_nostorm.png" alt="" width="82" height="265" />
+                    {% endif %}
+                </div>
+    		{% endif %}
+
+        </div>
+    {% endif %} <!-- end tpsshp-->
+	{% endif %} <!-- authentication-->
+
+    <!--wvelshp/////////////////////////////////////////-->
+    {% if show_maxwvelshp or show_wvelshp %}
+
+        <h3><a href="#wvel">Wind Speed at {% if wind10 %}10m Height{% else %}Ground Level{% endif %}</a></h3>
+
+        <div id="node_wvel">
+
+        	{% if show_maxwvelshp %}
+                <div class="radio">
+                    <input type="radio" name="layer0" value="maxwvelshp" onclick="javascript:selectCheck(this, map)"/>
+                    <label>Maximum Wind Speed</label>
+                    <span title='
+                    {% if requested_info.track_id.advisory.advisory == "999" %}
+                    		The highest wind speed that the ADCIRC model predicted within the entire model hindcast time range.
+                    {% else %}
+                    		The highest wind speed that the ADCIRC model predicts to occur within the entire model forecast time range.
+                		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+                </div>
+            {% endif %}
+
+			{% if is_authenticated %}
+            {% if show_wvelshp %}
+                <div class="radio">
+                    <input type="radio" name="layer0" value="wvelshp" onclick="javascript:selectCheck(this, map)"/>
+                    <label>Wind Speed at Date/Time</label>
+                    <span title='
+                {% if requested_info.track_id.advisory.advisory == "999" %}
+                    		The wind speed that the ADCIRC model predicted at the selected time.
+                {% else %}
+                    		The wind speed that the ADCIRC model predicts to occur at the selected time.
+                		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+                </div>
+
+                <div id="timesteps_wvelshp" class="tooltip" title="Click here to select a date and time">
+                    <!--name, id must be 'timestep_<layername>' -->
+                    <select name="timestep_wvelshp" id="timestep_wvelshp">
+                        <option value=""></option>
+                    </select>
+                    </div>
+
+                <div id="sliders_wvelshp">
+                    <div id="slider_text_wvelshp" class="timestep_sliderbar_text">Current Date and Time:</div>
+                    <div id="slider_wvelshp"></div>
+                </div>
+
+                <div class="animation">
+                    <button name="wvelshp" class="animation_text tooltip" title="Click here to start the animation">Start Animation</button>
+  				</div>
+
+            {%endif%}
+			{% endif %} <!-- authentication-->
+
+    		{% if selected_layer == "maxwvelshp" or selected_layer == "wvelshp" %}
+                <div class="top12" align="center">
+                    {% if requested_info.has_adv %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/wvel.png" alt="" width="120" height="265" />
+                    {% else %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/wvel_nostorm.png" alt="" width="118" height="265" />
+                    {% endif %}
+                </div>
+    		{% endif %}
+
+        </div>
+    {% endif %}
+
+</div> <!-- end treemenu-->
+{% endif %} <!-- SHP layers-->
+
+<!-- TIF /////////////////////////////////////////-->
+{% if show_maxelev or show_elev or show_maxinun or show_inun or show_maxhsign or show_hsign or show_maxtps or show_tps or show_maxwvel or show_wvel %}
+
+<div class="treeaccordion">
+    {% if show_maxelev or show_elev %}
+
+    <h3><a href="#elev">Water Height above
+    {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}
+    </a></h3>
+
+    <div id="node_elev">
+
+    {% if show_maxelev %}
+        <div class="radio">
+            <input type="radio" name="layer0" value="maxelev" onclick="javascript:selectCheck(this, map)"/>
+            <label>Maximum Water Height</label>
+        	<span title='
+            {% if requested_info.track_id.advisory.advisory == "999" %}
+                    The highest water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicted within the entire model hindcast time range.
+                {% else %}
+                    The highest water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicts to occur within the entire model forecast time range.
+                {% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+            </div>
+
+        {% if show_maxelev_auto %}
+            <div class="check left21">
+            	<input type="radio" name="layer0" value="maxelev_auto" class="displaynone"/>
+                <input type="checkbox" name="maxelev_auto" onclick="javascript:on_click_autolayer(this, map)"/>
+                <label class="font11">Display auto color scale</label>
+            </div>
+        {% endif %}
+    {% endif %}
+
+	{% if is_authenticated %}
+    {% if show_elev %}
+    <div class="radio">
+    	<input type="radio" name="layer0" value="elev" onclick="javascript:selectCheck(this, map)"/>
+		<label>Water Height at Date/Time</label>
+        <span title='
+        {% if requested_info.track_id.advisory.advisory == "999" %}
+        	The water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicted at the selected time.
+        {% else %}
+            The water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicts to occur at the selected time.
+         {% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+    	</div>
+        
+    <div id="timesteps_elev" class="tooltip" title="Click here to select a date and time">
+        <!--name, id must be 'timestep_<layername>' -->
+        <select name="timestep_elev" id="timestep_elev" >
+        	<option value=""></option>
+        </select>
+    </div>
+
+    {% endif %}
+    {% endif %}
+
+    {% if selected_layer == "maxelev" or selected_layer == "elev" %}
+        <div class="top10" align="center">
+        {% if requested_info.program_version <= 3 %}
+        	{% if requested_info.has_adv %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v3/elev_m_ft_{{requested_info.grid_datum}}.png" alt="" width="105" height="275" />
+            {% else %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v3/elev_m_ft_{{requested_info.grid_datum}}_nostorm.png" alt="" width="105" height="275" />
+            {% endif %}
+        {% else %}
+			{% if requested_info.has_adv %}
+                {% if requested_info.legend == 'pr'%}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v5/elev_m_msl_puerto.png" alt="" width="116" height="275" />
+    			{% elif requested_info.legend == 'nc' %}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v5/elev_m_{{requested_info.grid_datum}}_atlantic.png" alt="" width="105" height="275" />
+                {% elif requested_info.legend == 'ng'%}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v5/elev_m_{{requested_info.grid_datum}}_gulf.png" alt="" width="105" height="275" />
+                {% endif %}
+            {% else %}
+                {% if requested_info.legend == 'pr'%}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v5/elev_m_msl_nostorm_puerto.png" alt="" width="116" height="275" />
+                {% else %}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v5/elev_m_{{requested_info.grid_datum}}_nostorm.png" alt="" width="105" height="275" />
+                {% endif %}
+            {% endif %}
+		{% endif %}
+        </div>
+    {% endif %}
+
+    {% if selected_layer == "maxelev_auto" %}
+       <div class="auto top10" style="height:275px"> <!--height is needed for correct bottom-->
+            <div class="autoimg">
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/auto_m_{{requested_info.grid_datum}}.png" alt="" width="120" height="275" />
+            </div>
+           	<div class="legendvalues_left">
+               	{% if selected_layer == "maxelev_auto" %}
+               		{% for value in maxelev_auto_left_color_values %}
+                		<div class="val{{forloop.counter0}}">{{value}}</div>
+					{% endfor %}
+				{% endif %}
+            </div>
+           <div class="legendvalues_right">
+               	{% if selected_layer == "maxelev_auto" %}
+                    {% for value in maxelev_auto_color_values %}
+                    	<div class="val{{forloop.counter0}}">{{value}}</div>
+                    {% endfor %}
+				{% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    </div>
+    {% endif %}<!--end elev-->
+
+<!--/////////////////////////////////////////-->
+    {% if show_maxinun or show_inun %}
+    <h3><a href="#inun">Inundation Depth above Ground</a></h3>
+
+    <div id="node_inun">
+    <p class="legend_desc">Colors over land mean water height above ground. Colors over water mean water height above Mean Sea Level.</p>
+
+    {% if show_maxinun %}
+        <div class="radio">
+            <input type="radio" name="layer0" value="maxinun" onclick="javascript:selectCheck(this, map)"/>
+            <label>Maximum Inundation</label>
+            <span title='
+       		{% if requested_info.track_id.advisory.advisory == "999" %}
+           		The highest inundation depth that the ADCIRC model predicted within the entire model hindcast time range.
+       		{% else %}
+      		The highest inundation depth that the ADCIRC model predicts to occur within the entire model forecast time range.
+       		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+        </div>
+
+        {% if show_maxinun_auto %}
+        <div class="check left21">
+        	<input type="radio" name="layer0" value="maxinun_auto" class="displaynone"/>
+            <input type="checkbox" name="maxinun_auto" onclick="javascript:on_click_autolayer(this, map)"/>
+            <label class="font11">Display auto color scale</label>
+        </div>
+        {% endif %}
+
+    {% endif %}
+
+	{% if is_authenticated %}
+    {% if show_inun %}
+    <div class="radio">
+    	<input type="radio" name="layer0" value="inun" onclick="javascript:selectCheck(this, map)"/>
+        <label>Inundation at Date/Time</label>
+        <span title='
+        	{% if requested_info.track_id.advisory.advisory == "999" %}
+        		The inundation depth that the ADCIRC model predicted at the selected time.
+        	{% else %}
+        		The inundation depth that the ADCIRC model predicts to occur at the selected time.
+    		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+    </div>
+
+    <div id="timesteps_inun" class="tooltip" title="Click here to select a date and time">
+        <!--name, id must be 'timestep_<layername>' -->
+        <select name="timestep_inun" id="timestep_inun">
+        	<option value=""></option>
+        </select>
+    </div>
+
+    <div id="sliders_inun">
+        <div id="slider_text_inun" class="timestep_sliderbar_text">Ccurrent Date and Time:</div>
+    	<div id="slider_inun"></div>
+	</div>
+
+    <div class="animation">
+		<button name="inun" class="animation_text tooltip" class="bordernone" title="Click here to start the animation">Start Animation</button>
+	</div>
+    
+    {% endif %}
+    {% endif %}
+
+    {% if selected_layer == "maxinun" or selected_layer == "inun" %}
+        <div class="top12" align="center">
+        {% if requested_info.program_version <= 3 %}
+            {% if requested_info.has_adv %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v3/inun_m_ft.png" alt="" width="105" height="270" />
+            {% else %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v3/inun_m_ft_nostorm.png" alt="" width="105" height="270" />
+            {% endif %}
+        {% else %}
+            {% if requested_info.has_adv %}
+                {% if requested_info.legend == 'nc' or requested_info.legend == 'pr' %}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v5/inun_m_atlantic.png" alt="" width="105" height="260" />
+                {% else %}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v5/inun_m_gulf.png" alt="" width="105" height="270" />
+                {% endif %}
+            {% else %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/inun_m_nostorm.png" alt="" width="114" height="260" />
+            {% endif %}
+        {% endif %}
+        </div>
+    {% endif %}
+
+    {% if selected_layer == "maxinun_auto" %}
+        <div class="auto">
+            <div class="autoimg" >
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/auto_m_nodatum.png" alt="" width="120" height="262" />
+            </div>
+            <div class="legendvalues_left">
+               	{% if selected_layer == "maxinun_auto" %}
+               		{% for value in maxinun_auto_left_color_values %}
+                		<div class="val{{forloop.counter0}}">{{value}}</div>
+					{% endfor %}
+				{% endif %}
+            </div>
+           <div class="legendvalues_right">
+               	{% if selected_layer == "maxinun_auto" %}
+                    {% for value in maxinun_auto_color_values %}
+                    	<div class="val{{forloop.counter0}}">{{value}}</div>
+                    {% endfor %}
+				{% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+	</div><!--end inun-->
+    {% endif %}
+
+<!--/////////////////////////////////////////-->
+    {% if show_maxhsign or show_hsign %}
+    <h3><a href="#hsign">Significant Wave Height</a></h3>
+
+    <div id="node_hsign">
+    <p class="legend_desc">Average height of the largest 1/3 of the waves, measured from trough to crest.</p>
+
+    {% if show_maxhsign %}
+        <div class="radio">
+            <input type="radio" name="layer0" value="maxhsign" onclick="javascript:selectCheck(this, map)"/>
+            <label>Maximum Wave Height</label>
+            <span title='
+         		{% if requested_info.track_id.advisory.advisory == "999" %}
+               		The highest significant wave height (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicted within the entire model hindcast time range.
+           		{% else %}
+               		The highest significant wave height (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicts to occur within the entire model forecast time range.
+           		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+        </div>
+
+        {% if show_maxhsign_auto %}
+        <div class="check left21">
+        	<input type="radio" name="layer0" value="maxhsign_auto" class="displaynone"/>
+            <input type="checkbox" name="maxhsign_auto" onclick="javascript:on_click_autolayer(this, map)"/>
+            <label class="font11">Display auto color scale</label>
+        </div>
+        {% endif %}
+
+    {% endif %}
+
+	{% if is_authenticated %}
+    {% if show_hsign %}
+    <div class="radio">
+    	<input type="radio" name="layer0" value="hsign" onclick="javascript:selectCheck(this, map)"/>
+        <label> Wave Height at Date/Time</label>
+        <span title='
+       		{% if requested_info.track_id.advisory.advisory == "999" %}
+       			The significant wave height (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicted at the selected time.
+       		{% else %}
+           		The significant wave height (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that the ADCIRC model predicts to occur at the selected time.
+      		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+    </div>
+    
+    <div id="timesteps_hsign" class="tooltip" title="Click here to select a date and time">
+        <!--name, id must be 'timestep_<layername>' -->
+        <select name="timestep_hsign" id="timestep_hsign">
+        	<option value=""></option>
+        </select>
+    </div>
+
+    <div id="sliders_hsign">
+        <div id="slider_text_hsign" class="timestep_sliderbar_text">Current Date and Time:</div>
+    	<div id="slider_hsign"></div>
+	</div>
+
+        <div class="animation">
+        	<button name="hsign" class="animation_text tooltip" title="Click here to start the animation">Start Animation</button>
+        </div>
+        
+    {%endif%}
+    {%endif%}
+
+    {% if selected_layer == "maxhsign" or selected_layer == "hsign" %}
+        <div class="top12" align="center">
+        {% if requested_info.program_version <= 3 %}
+            {% if requested_info.has_adv %}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v3/hsign_m_ft_{{requested_info.grid_datum}}.png" alt="" width="106" height="287" />
+            {% else %}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v3/hsign_m_ft_{{requested_info.grid_datum}}_nostorm.png" alt="" width="106" height="275" />
+            {% endif %}
+        {% else %}
+            {% if requested_info.has_adv %}
+                {% if requested_info.legend == 'nc' or requested_info.legend == 'pr'%}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v5/hsign_m_{{requested_info.grid_datum}}_atlantic.png" alt="" width="105" height="275" />
+                {% else %}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v5/hsign_m_{{requested_info.grid_datum}}_gulf.png" alt="" width="105" height="275" />
+                {% endif %}
+            {% else %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/hsign_m_{{requested_info.grid_datum}}_nostorm.png" alt="" width="105" height="275" />
+            {% endif %}
+        {% endif %}
+        </div>
+    {% endif %}
+
+    {% if selected_layer == "maxhsign_auto" %}
+       <div class="auto" style="height:275px"> <!--height is needed for correct bottom-->
+           <div class="autoimg">
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/auto_m_{{requested_info.grid_datum}}.png" alt="" width="120" height="275" />
+           </div>
+           <div class="legendvalues_left">
+               	{% if selected_layer == "maxhsign_auto" %}
+               		{% for value in maxhsign_auto_left_color_values %}
+                		<div class="val{{forloop.counter0}}">{{value}}</div>
+					{% endfor %}
+				{% endif %}
+           </div>
+           <div class="legendvalues_right">
+               	{% if selected_layer == "maxhsign_auto" %}
+                    {% for value in maxhsign_auto_color_values %}
+                    	<div class="val{{forloop.counter0}}">{{value}}</div>
+                    {% endfor %}
+				{% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+	</div><!-- end hsign-->
+   {%endif%}
+
+<!--/////////////////////////////////////////-->
+    {% if show_maxtps or show_tps %}
+    <h3><a href="#tps">Peak Wave Period</a></h3>
+
+    <div id="node_tps">
+    <p class="legend_desc">Measure of how often waves will impact the coast (wave frequency)</p>
+
+    {% if show_maxtps %}
+        <div class="radio">
+            <input type="radio" name="layer0" value="maxtps" onclick="javascript:selectCheck(this, map)"/>
+            <label>Maximum Wave Period</label>
+           <span title='
+           		{% if requested_info.track_id.advisory.advisory == "999" %}
+               		The highest peak wave period that the ADCIRC model predicted within the entire model hindcast time range.
+           		{% else %}
+                 	The highest peak wave period that the ADCIRC model predicts to occur within the entire model forecast time range.
+           		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+        </div>
+
+        {% if show_maxtps_auto %}
+        <div class="check left21">
+        	<input type="radio" name="layer0" value="maxtps_auto" class="displaynone"/>
+            <input type="checkbox" name="maxtps_auto" onclick="javascript:on_click_autolayer(this, map)"/>
+            <label class="font11">Display auto color scale</label>
+        </div>
+        {% endif %}
+
+    {% endif %}
+
+	{% if is_authenticated %}
+    {% if show_tps %}
+        <div class="radio">
+            <input type="radio" name="layer0" value="tps" onclick="javascript:selectCheck(this, map)"/>
+            <label>Wave Period at Date/Time</label>
+            <span title='
+           		{% if requested_info.track_id.advisory.advisory == "999" %}
+            		The peak wave period that the ADCIRC model predicted at the selected time.
+          		{% else %}
+               		The peak wave period that the ADCIRC model predicts to occur at the selected time.
+           		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+        </div>
+
+        <div id="timesteps_tps" class="tooltip" title="Click here to select a date and time">
+            <!--name, id must be 'timestep_<layername>' -->
+            <select name="timestep_tps" id="timestep_tps">
+                <option value=""></option>
+            </select>
+        </div>
+
+        <div id="sliders_tps">
+            <div id="slider_text_tps" class="timestep_sliderbar_text">Current Date and Time:</div>
+            <div id="slider_tps"></div>
+        </div>
+
+        <div class="animation">
+                <button name="tps" class="tooltip" class="animation_text tooltip" title="Click here to start the animation">Start Animation</button>
+        </div>
+        
+    {% endif %}
+    {% endif %}
+
+    {% if selected_layer == "maxtps" or selected_layer == "tps" %}
+        <div class="top12" align="center">
+        {% if requested_info.program_version <= 3 %}
+            {% if requested_info.has_adv %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v3/tps_s.png" alt="" width="78" height="259" />
+            {% else %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v3/tps_s_nostorm.png" alt="" width="78" height="259" />
+            {% endif %}
+        {% else %}
+            {% if requested_info.has_adv %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/tps_s.png" alt="" width="78" height="259" />
+            {% else %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/tps_s_nostorm.png" alt="" width="78" height="259" />
+            {% endif %}
+       {% endif %}
+        </div>
+   {% endif %}
+
+   {% if selected_layer == "maxtps_auto" %}
+       <div class="auto">
+           <div class="autoimg">
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/auto_s_nodatum.png" alt="" width="120" height="262" />
+           </div>
+           <div class="legendvalues_right">
+        		{% if selected_layer == "maxtps_auto" %}
+            		{% for value in maxtps_auto_color_values %}
+                		<div class="val{{forloop.counter0}}">{{value}}</div>
+               		{% endfor %}
+				{% endif %}
+			</div>
+		</div>
+    {% endif %}
+
+	</div><!-- end tps-->
+   {% endif %}
+
+<!--/////////////////////////////////////////-->
+    {% if show_maxwvel or show_wvel %}
+    <h3><a href="#wvel">Wind Speed at Ground Level</a></h3>
+
+    <div id="node_wvel">
+
+    {% if show_maxwvel %}
+        <div class="radio">
+            <input type="radio" name="layer0" value="maxwvel" onclick="javascript:selectCheck(this, map)"/>
+            <label>Maximum Wind Speed</label>
+            <span title='
+       			{% if requested_info.track_id.advisory.advisory == "999" %}
+            		The highest wind speed that the ADCIRC model predicted within the entire model hindcast time range.
+          		{% else %}
+           			The highest wind speed that the ADCIRC model predicts to occur within the entire model forecast time range.
+         		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+        </div>
+
+        {% if show_maxwvel_auto %}
+        <div class="check left21">
+        	<input type="radio" name="layer0" value="maxwvel_auto" class="displaynone"/>
+            <input type="checkbox" name="maxwvel_auto" onclick="javascript:on_click_autolayer(this, map)"/>
+            <label class="font11">Display auto color scale</label>
+        </div>
+        {% endif %}
+
+    {% endif %}
+
+	{% if is_authenticated %}
+    {% if show_wvel %}
+    <div class="radio">
+    	<input type="radio" name="layer0" value="wvel" onclick="javascript:selectCheck(this, map)"/>
+		<label>Wind Speed at Date/Time</label>
+        <span title='
+     		{% if requested_info.track_id.advisory.advisory == "999" %}
+        		The wind speed that the ADCIRC model predicted at the selected time.
+     		{% else %}
+         		The wind speed that the ADCIRC model predicts to occur at the selected time.
+       		{% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+    </div>
+
+    <div id="timesteps_wvel" class="tooltip" title="Click here to select a date and time">
+        <!--name, id must be 'timestep_<layername>' -->
+        <select name="timestep_wvel" id="timestep_wvel">
+        	<option value=""></option>
+        </select>
+    </div>
+
+    <div id="sliders_wvel">
+        <div id="slider_text_wvel" class="timestep_sliderbar_text">Current Date and Time:</div>
+    	<div id="slider_wvel"></div>
+	</div>
+
+	<div class="animation">
+       	<button name="wvel" class="animation_text tooltip" title="Click here to start the animation">Start Animation</button>
+    </div>
+
+    {% endif %}
+    {% endif %}
+
+    {% if selected_layer == "maxwvel" or selected_layer == "wvel" %}
+        <div class="top12" align="center">
+        {% if requested_info.program_version <= 3 %}
+    		{% if requested_info.track_id.advisory.storm.stormname == "ISAAC" and requested_info.track_id.advisory.advisory == "999" %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v3/wvel_kmh_mph_ISAAC.png" alt="" width="120" height="270" />
+        	{% else %}
+                {% if requested_info.has_adv %}
+                    {% if requested_info.program_version == 3 %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/v3/wvel_kmh_mph_{{requested_info.track_id.advisory.get_category_display}}.png" alt="" width="120" height="270" />
+                    {% else %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/v3/wvel_kmh_mph.png" alt="" width="120" height="270" />
+                    {% endif %}
+                {% else %}
+                    <img class="legendimage" name="/{{basepath}}/_legend/v3/wvel_kmh_mph_nostorm.png" alt="" width="120" height="270" />
+                {% endif %}
+        	{% endif %}
+        {% else %}
+            {% if requested_info.has_adv %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/wvel_kmh.png" alt="" width="120" height="270" />
+            {% else %}
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/wvel_kmh_nostorm.png" alt="" width="114" height="260" />
+            {% endif %}
+        {% endif %}
+        </div>
+    {% endif %}
+
+    {% if selected_layer == "maxwvel_auto" %}
+       <div class="auto"> <!--height is needed for correct bottom-->
+           <div class="autoimg">
+                <img class="legendimage" name="/{{basepath}}/_legend/v5/auto_kmh_nodatum.png" alt="" width="120" height="262" />
+           </div>
+           <div class="legendvalues_left">
+               	{% if selected_layer == "maxwvel_auto" %}
+               		{% for value in maxwvel_auto_left_color_values %}
+                		<div class="val{{forloop.counter0}}">{{value}}</div>
+					{% endfor %}
+				{% endif %}
+           </div>
+           <div class="legendvalues_right">
+               	{% if selected_layer == "maxwvel_auto" %}
+                    {% for value in maxwvel_auto_color_values %}
+                    	<div class="val{{forloop.counter0}}">{{value}}</div>
+                    {% endfor %}
+				{% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if show_diffmaxwvelhist %}
+    <div class="radio">
+        <!--class 'diff' is necessary for query-->
+    	<input type="radio" class="diff" name="layer0" value="diffmaxwvelhist" onclick="javascript:selectCheck(this, map)"/>
+		<label class="linenormal">Comparison Max. Wind Speed</label>
+    </div>
+    <p class="legend_desc left21">
+    	Comparison of the {{requested_info.get_windmodel_diffmaps}} (A) to the Asymmetric Vortex Wind Model (B)
+    </p>
+    <table border="0" cellpadding="1" cellspacing="0" class="left20 top5">
+    	<tr>
+       		<td><img src="/{{basepath}}/_legend/diff0.png" width="16" height="13" alt="" /></td>
+        	<td class="font12">A minus B &lt;= +/-1 m/s</td>
+   		</tr>
+    	<tr>
+       		<td><img src="/{{basepath}}/_legend/diff1.png" width="16" height="13" alt="" /></td>
+       		<td class="font12">A > B</td>
+    	</tr>
+    	<tr>
+       		<td><img src="/{{basepath}}/_legend/diff2.png" width="16" height="13" alt="" /></td>
+       		<td class="font12">A < B</td>
+    	</tr>
+   	</table>
+    {% endif %}
+
+	</div><!-- end wvel-->
+    {% endif%}
+
+</div><!--end treeaccordion-->
+{% endif %} <!-- TIF images -->
+
+<!--/////////////////////////////////////////-->
+{% if is_authenticated %}
+<div class="treeaccordion">
+{% if show_hydro %}
+
+    <h3><a href="#hydro">Water Level Stations</a></h3>
+
+    <div id="hydro">
+    		<div class="check"><input type="checkbox" class="top1" name="layer5" value="hydro"/><label>Water Level Stations</label><span class="legend_sprite legend_info tooltip" title='Check the box to display the stations on the map. Click on an icon on the map to see detailed station information.'>&nbsp;</span></div>
+    		<div class="left8">
+    			<div class="top5" id="noaa_nos" style="display:none"><input type="checkbox" name="layer5_1" value="noaa_nos"/>&nbsp;&nbsp;<span class="legend_sprite gauge_nos block"></span>&nbsp;&nbsp;<span class="hydro_text"><a href="http://tidesandcurrents.noaa.gov/gmap3/" target="_blank">NOAA-NOS</a> stations</span></div>
+        		<div class="top4" id="noaa_rfs" style="display:none"><input type="checkbox" name="layer5_2" value="noaa_rfs"/>&nbsp;&nbsp;<span class="legend_sprite gauge_rfs block"></span>&nbsp;&nbsp;<span class="hydro_text"><a href="http://water.weather.gov/ahps/rfc/rfc.php" target="blank">NOAA-RFC</a> stations</span></div>
+    			<div class="top4" id="usgs" style="display:none"><input type="checkbox" name="layer5_4" value="usgs"/>&nbsp;&nbsp;<span class="legend_sprite gauge_usgs block"></span>&nbsp;&nbsp;<span class="hydro_text"><a href="http://waterdata.usgs.gov/nwis/nwis" target="_blank">USGS</a> stations</span></div>
+       			<div class="top4" id="usace" style="display:none"><input type="checkbox" name="layer5_3" value="usace"/>&nbsp;&nbsp;<span class="legend_sprite gauge_usace block"></span>&nbsp;&nbsp;<span class="hydro_text"><a href="http://www.mvn.usace.army.mil/Missions/Engineering/StageandHydrologicData.aspx" target="_blank">USACE</a> stations</span></div>
+    			<div class="top4" id="other" style="display:none"><input type="checkbox" name="layer5_5" value="other"/>&nbsp;&nbsp;<span class="legend_sprite gauge6 block"></span>&nbsp;&nbsp;<span class="hydro_text">Other stations</span></div>
+    	</div>
+
+<!--    <table border="0" cellpadding="1" cellspacing="0">
+    <tr>
+    	<td rowspan="5" width="24">&nbsp;</td>
+    	<td width="16" valign="top" align="left"><span class="legend_sprite gauge1 block"></span></td>
+        <td>Gage stations with<br/>observed + predicted time series</td>
+	</tr>
+    <tr >
+        <td valign="top" align="left"><span class="legend_sprite gauge3 block"></span></td>
+        <td>Gage stations with<br/> observed time series only</td>
+    </tr>
+    <tr >
+        <td valign="top" align="left"><span class="legend_sprite gauge4 block"></span></td>
+        <td>Gage stations with<br/>predicted time series only</td>
+    </tr>
+    {% if requested_info.track_id.advisory.storm.stormname == "ISAAC" and requested_info.track_id.advisory.advisory == "999" %}
+    <tr >
+        <td valign="top" align="left"><span class="legend_sprite gauge6 block"></span></td>
+        <td class="top2">USGS Rapid Deployment Stations for Hurricane ISAAC</td>
+    </tr>
+    {% endif %}
+    </table>-->
+
+
+   	</div>
+
+{% endif %}<!--end hydro-->
+</div><!--end treeaccordion-->
+{% endif %} <!-- authentication-->
+
+<!--/////////////////////////////////////////-->
+{% if is_authenticated %}
+<div class="treeaccordion">
+{% if show_precimg %}
+
+    <h3><a href="#prec">Precipitation Data</a></h3>
+
+    <div>
+<!--    {% if show_prec %}
+    <div class="check"><input type="checkbox" name="layer8" value="prec"/>
+    	<span class="legend_sprite precip block marginleft1 vertmiddle"></span>
+        <label>Precipitation Stations</label>
+	</div>
+    <div class="legend_desc2 legend_desc_link margintop0">(source: <!--<a href="http://www.nws.noaa.gov/oh/hads/" target="_blank">NOAA-HADS</a>, --><!--<a href="http://waterdata.usgs.gov/nwis/nwis" target="_blank">USGS</a>, <a href="http://www.nc-climate.ncsu.edu" target="_blank">NC Climate Office</a>)</div>
+    <div class="legend_desc2"><!--Move your mouse over--><!--Click on a station icon to display detailed station information.</div>
+    {% endif %}-->
+
+<!--    	<div><span class="base_date">base date: {% if requested_info.has_adv %}
+        {% if time_zone == "utc" %}{% timezone "UTC" %}
+            {{requested_info.track_id.advisory.adv_time_utc|date:'m/d/Y, H:i T'}}
+        {% endtimezone %}{% endif %}
+        {% if time_zone == "cdt" %}{% timezone "US/Central" %}
+           {{requested_info.track_id.advisory.adv_time_utc|date:'m/d/Y, fA T'}}
+        {% endtimezone %}{% endif %}
+        {% if time_zone == "edt" %}{% timezone "US/Eastern" %}
+           {{requested_info.track_id.advisory.adv_time_utc|date:'m/d/Y, fA T'}}
+        {% endtimezone %}{% endif %}
+        {% if time_zone == "ast" %}{% timezone "America/Puerto_Rico" %}
+           {{requested_info.track_id.advisory.adv_time_utc|date:'m/d/Y, fA T'}}
+        {% endtimezone %}{% endif %}
+
+		{% else %}
+        {% if time_zone == "utc" %}{% timezone "UTC" %}
+            {{requested_info.adcrun_daytime_utc|date:'m/d/Y, H:i T'}}
+        {% endtimezone %}{% endif %}
+        {% if time_zone == "cdt" %}{% timezone "US/Central" %}
+           {{requested_info.adcrun_daytime_utc|date:'m/d/Y, fA T'}}
+        {% endtimezone %}{% endif %}
+        {% if time_zone == "edt" %}{% timezone "US/Eastern" %}
+           {{requested_info.adcrun_daytime_utc|date:'m/d/Y, fA T'}}
+        {% endtimezone %}{% endif %}
+        {% if time_zone == "ast" %}{% timezone "America/Puerto_Rico" %}
+           {{requested_info.adcrun_daytime_utc|date:'m/d/Y, fA T'}}
+        {% endtimezone %}{% endif %}
+        {% endif %}
+        </span></div>-->
+
+    <div><input type="checkbox" class="top3" name="layer9" value="precimg" onclick="javascript:selectCheck(this, map)"/><!--<span class="legend_sprite precip_coverage block vertmiddle marginleft6"></span>--><span class="left7 prec_text">Precipitation Coverage</span></div>
+    <div class="legend_desc2 legend_desc_link">(source: <a href="http://nowcoast.noaa.gov/" target="_blank">NOAA nowCOAST</a>)</div>
+
+        <!--name, id must be 'timestep_<layername>' -->
+        <div class="tooltip top9 botttom5" title="Click here to select a precipitation map">
+            <select name="timestep_precimg" id="timestep_prec">
+        	<option value=""></option>
+        </select>
+        </div>
+    	<div class="valid_desc">Valid: <span id="timestep_precimg_valid"></span></div>
+
+        <div class="top10" align="center" style="margin-left:-2px">
+            {% if unit == 'ft' %}<img class="legendimage" name="/{{basepath}}/_legend/precimg_ft.png" alt="" width="82" height="260" />{% else %}<img class="legendimage" name="/{{basepath}}/_legend/precimg_m.png" alt="" width="82" height="260" />{% endif %}
+	</div>
+
+    </div>
+{% endif %}<!--end prec-->
+</div><!--end treeaccordion-->
+{% endif %} <!-- authentication-->
+
+{% if is_authenticated %}
+<div class="treeaccordion">
+    <!--/////////////////////////////////////////-->
+    <h3><a href="#topo">Topographical Features</a></h3>
+    <div>
+        <div>
+           <!--{% if requested_info.grid == "norl_s08_g05f_grd" or requested_info.grid == "sl15v3_2007_r9a" or requested_info.grid == "sl15_2007_IHNC_r03q_levchk" or  requested_info.grid == "ocpr_v19a_DesAllemands4CERA" or requested_info.grid == "sl16_alpha_2007_26" or requested_info.grid == "FEMAR4"%}
+            <tr>
+                <td class="top1 bottom8"><input type="checkbox" name="layer4" value="levees" onclick="javascript:selectCheck(this, map)"/></td>
+                <td class="left8 bottom8"><span class="legend_sprite levee block"></span></td>
+                <td class="left9 bottom8 font12">levee alignments</td>
+            </tr>
+            {% endif %}-->
+            <!--<tr>
+                <td><input type="checkbox" name="layer12" value="counties" onclick="javascript:selectCheck(this, map)"/></td>
+                <td class="left7"><span class="legend_sprite counties block"></span></td>
+                <td class="left8 bottom4"><a href="https://www.census.gov/en.html" target="_blank">US Census</a> county borders</td>
+            </tr>-->
+    		<div class="check"><input type="checkbox"name="layer6" value="shoreline" onclick="javascript:selectCheck(this, map)"/>&nbsp;&nbsp;<span class="legend_sprite shoreline block"></span>&nbsp;&nbsp;<span class="prec_text"><a href="http://shoreline.noaa.gov/" target="_blank">NOAA</a> Shoreline</span></div>
+			{% if is_authenticated %}
+            {% if requested_info.grid == "sl15v3_2007_r9a" or requested_info.grid == "sl15_2007_IHNC_r03q_levchk" or requested_info.grid == "sl15_2010_HSDRRS_2012_v9" or requested_info.grid == "ocpr_v19a_DesAllemands4CERA" or requested_info.grid == "cpra_2011_v03a" or requested_info.grid == "sl16_alpha_2007_26" or requested_info.grid == "FEMAR4" or requested_info.grid == "tx2008r35h" or requested_info.grid == "tx2008r35hred" or requested_info.grid == "cpra_2017_v07a_chk" or requested_info.grid == "cpra2017_v11k-CurrentConditions_chk" or requested_info.grid == "cpra2017_v12c-CurrentConditions-WithUpperAtch_chk" or requested_info.grid == "HSDRRS2014_MRGO_leveeupdate_fixSTC_MX" or requested_info.grid == "hsofs" or requested_info.grid == "LA_v12h-WithUpperAtch" or requested_info.grid == "LA_v17a-WithUpperAtch_chk" %}
+    		<div class="top4"><input type="checkbox" name="layer3" value="barriers" onclick="javascript:selectCheck(this, map)"/>&nbsp;&nbsp;<span class="legend_sprite barriers block"></span>&nbsp;&nbsp;<span class="prec_text">Barriers (levees, roads)</span></div>
+         	{% endif %}
+         	{% endif %}
+        </div>
+	</div>
+</div><!--end treemenu-->
+{% endif %}
+
+<div class="treeaccordion">
+<!--/////////////////////////////////////////-->
+    <h3><a href="#grid">ADCIRC Model Information</a></h3>
+    <div>
+
+    	<div class="check"><input type="checkbox" name="layer4" value="griddomain" onclick="javascript:selectCheck(this, map)"/>&nbsp;&nbsp;<span class="legend_sprite boundary block"></span>&nbsp;&nbsp;<span>Model Boundary</span></div>
+        <p class="legend_desc">Map information is not available beyond this line.</p>
+		{% if is_authenticated %}
+    	<div class="check top4"><input type="checkbox" name="layer2" value="gridnodes" onclick="javascript:selectCheck(this, map)"/>&nbsp;&nbsp;<span class="prec_text">Grid Nodes relative to {% if requested_info.grid == "tx2008r35h" or requested_info.grid == "cpra2017_v12c-CurrentConditions-WithUpperAtch_chk" or requested_info.grid == "LA_v12h-WithUpperAtch" or requested_info.grid == "LAv17a" %}MSL{% else %}{% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}{% endif %}</span></div>
+        <div class="left5 top1">
+            <div><span class="legend_sprite nodes_water block"></span>&nbsp;&nbsp;<span class="prec_text">&lt 0 (wet)</span></div>
+            <div class="top3"><span class="legend_sprite nodes_land block"></span>&nbsp;&nbsp;<span class="prec_text">&gt 0 (dry)</span></div>
+            <div class="top3"><span class="legend_sprite nodes_dry block"></span>&nbsp;&nbsp;<span class="prec_text">&lt; 0 but protected (dry)</span></div>
+        </div>
+		{% endif %} <!-- authentication-->
+    </div>
+
+</div><!--end treemenu-->

@@ -1,0 +1,19 @@
+{% extends 'accounts/base.html' %}
+
+{% block head %}
+	<title>Contact CERA - Coastal Emergency Risks Assessment</title>
+{% endblock head %}
+
+{% block body %}
+	<div class="headline">Contact Us</div>
+	<div class="descr1">Please fill out the form below or send us an email to <a href="mailto:info@coastalrisk.live">info@coastalrisk.live</a> <div>
+    	<div class="descr2">We will get back to you soon! </div>
+
+	<form method="post">
+		{% csrf_token %}
+		{{ form.as_p }}
+		<button class="btn_login" type="submit">Send</button>
+	</form>
+	<div class="cancel"><a href="/cerarisk/" ><button class="btn_cancel">Go back to website</button></a></div>
+{% endblock body %}
+

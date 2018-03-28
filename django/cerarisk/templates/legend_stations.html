@@ -1,0 +1,192 @@
+{% load tz %}
+
+<!--class 'treeaccordion' determines one independent accordion in the legend (function load_legend in cera.html)-->
+
+<div class="treeaccordion">
+<!--/////////////////////////////////////////-->
+    <h3><a href="#maptype">Background Map</a></h3>
+    <div>
+    	<div class="radio">
+        	<input type="radio" name="maptype" value="roadmap" onclick="javascript: setMapTypeId('custom_roadmap')"/>
+            <label>Road Map</label>
+        </div>
+        <div class="radio">
+        	<input type="radio" name="maptype" value="satellite" onclick="javascript: setMapTypeId(google.maps.MapTypeId.SATELLITE)"/>
+            <label>Satellite</label>
+        </div>
+    	<div class="radio">
+        	<input type="radio" name="maptype" value="hybrid" onclick="javascript: setMapTypeId(google.maps.MapTypeId.HYBRID)"/>
+            <label>Hybrid</label>
+        </div>
+    	<div class="radio">
+        	<input type="radio" name="maptype" value="terrain" onclick="javascript: setMapTypeId(google.maps.MapTypeId.TERRAIN)"/>
+            <label>Terrain</label>
+        </div>
+	</div>
+
+</div><!--end treemenu-->
+
+<!-- /////////////////////////////////////////-->
+{% if requested_info.has_adv %}
+<div class="treeaccordion">
+
+    <h3><a href="#trackline">Tropical Cyclone Activity</a></h3>
+    <div>
+
+	{% if requested_info.has_adv %}
+        <div class="check">
+        	<input type="checkbox" name="layer1" value="trackline"/><label>Storm Track</label>
+            <span title='
+            {% if requested_info.track_id.advisory.advisory == "999" %}
+            	Official best track provided by the National Hurricane Center
+            {% else %}
+                {% if requested_info.track_id.track == 't01' %}Official forecast track issued by the National Hurricane Center{% endif %}
+                {% if requested_info.track_id.track == 't02' %}{{requested_info.track_id.mod_percent}}% maximum wind speed compared to the official forecast track issued by the National Hurricane Center{% endif %}
+                {% if requested_info.track_id.track == 't03' %}{{requested_info.track_id.mod_percent}}% over land speed compared to the official forecast track issued by the National Hurricane Center{% endif %}
+                {% if requested_info.track_id.track == 't04' %}{{requested_info.track_id.mod_percent}}% veer left ({{requested_info.track_id.mod_percent|slice:"1:"}}% of the way between the official forecast track issued by the National Hurricane Center and the left edge of the cone of uncertainty){% endif %}
+                {% if requested_info.track_id.track == 't05' %}{{requested_info.track_id.mod_percent}}% veer right ({{requested_info.track_id.mod_percent|slice:"1:"}}% of the way between the official forecast track issued by the National Hurricane Center and the right edge of the cone of uncertainty){% endif %}
+                {% if requested_info.track_id.track == 't06' %}{{requested_info.track_id.mod_percent}}% maximum radius compared to the official forecast track issued by the National Hurricane Center{% endif %}
+                {% if requested_info.track_id.track == 't07' %}Official forecast track issued by the National Hurricane Center National Hurricane Center with {{requested_info.track_id.mod_percent}}% maximum wind speed only{% endif %}
+                {% if requested_info.track_id.track == 't08' %}Official forecast track issued by the National Hurricane Center with {{requested_info.track_id.mod_percent}}% constant maximum radius{% endif %}
+                {% elif requested_info.track_id.track == 't14' %}{{requested_info.track_id.mod_percent}}mi shift left ({{requested_info.track_id.mod_percent|slice:"1:"}}mi shifted to the left with regard to the official forecast track issued by the National Hurricane Center)
+                {% elif requested_info.track_id.track == 't15' %}{{requested_info.track_id.mod_percent}}mi shift right ({{requested_info.track_id.mod_percent|slice:"1:"}}mi shifted to the right with regard to the official forecast track issued by the National Hurricane Center)
+            {% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+    	</div>
+
+        <div class="top9 bottom5">
+        	<span class="legend_sprite trackline block"></span>
+        	<span title='Move the mouse over a labeled track point to see the National Hurricane Center track info' class="legend_sprite legend_info tooltip">&nbsp;</span>
+        </div>
+        <div>
+            <span class="legend_sprite track_outside block vertmiddle"></span>
+            <span class="left5">outside model
+            {% if requested_info.track_id.advisory.advisory == "999" %} hindcast{% else %} forecast{% endif %}</span>
+        </div>
+        <!--{% if timesteps %}
+        <p class="legend_desc">Click a track point to display the time series map for the selected time.</p>
+        {% endif %}-->
+        {% if maintrack %}
+            <div class="top5">
+            <span class="legend_sprite track_main block vertmiddle"></span><input type="hidden" name="layer7" value="maintrack"/><span class="left5">NHC official forecast track</span><br/>
+        </div>
+        {% endif %}
+    {% endif %} <!-- end has_adv-->
+
+	</div>
+
+</div><!--end treemenu-->
+{% endif %}
+
+<!-- SHP /////////////////////////////////////////-->
+{% if show_maxelevshp or show_elevshp or show_maxinunshp or show_inunshp or show_maxhsignshp or show_hsignshp or show_maxtpsshp or show_tpsshp or show_maxwveshp or show_wvelshp %}
+<div class="treeaccordion">
+
+	<!--elevshp/////////////////////////////////////////-->
+    {% if show_maxelevshp or show_elevshp %}
+
+        <h3><a href="#elev">Water Height above
+        {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}
+        </a></h3>
+
+     	<div id="node_elev">
+
+        {% if show_maxelevshp %}
+            <div class="radio">
+                <input type="radio" name="layer0" value="maxelevshp" onclick="javascript:selectCheck(this, map)"/>
+                <label>Maximum Water Height</label>
+        		<span title='
+                {% if requested_info.track_id.advisory.advisory == "999" %}
+                    The highest water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that occured within the entire model hindcast time range.
+                {% else %}
+                    The highest water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) predicted to occur within the entire model forecast time range.
+                {% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+            </div>
+    	{% endif %}
+
+        {% if show_elevshp %}
+            <div class="radio">
+    			<input type="radio" name="layer0" value="elevshp" onclick="javascript:selectCheck(this, map)"/>
+				<label>Water Height at Date/Time</label>
+        		<span title='
+            	{% if requested_info.track_id.advisory.advisory == "999" %}
+                        The water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) that occured at the selected time.
+           		{% else %}
+                        The water level (above {% if requested_info.grid_datum == "msl" %}MSL{% else %}NAVD88{% endif %}) predicted to occur at the selected time.
+                    {% endif %}' class="legend_sprite legend_info tooltip">&nbsp;</span>
+    		</div>
+
+            <div id="timesteps_elevshp" class="tooltip" title="Click here to select a date and time">
+                <!--name, id must be 'timestep_<layername>' -->
+                <select name="timestep_elevshp" id="timestep_elevshp" >
+                    <option value=""></option>
+                </select>
+                </div>
+
+       	{% endif %}
+
+    	{% if selected_layer == "maxelevshp" or selected_layer == "elevshp" %}
+        	<div class="top10" align="center">
+            <!-- unit: ft -->
+                {% if requested_info.has_adv %}
+                    {% if requested_info.legend == 'nc' %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/elev_{{requested_info.grid_datum}}_atlantic_{{unit}}.png" alt="" width="80" height="280" />
+                    {% elif requested_info.legend == 'ng' %}
+                        <img class="legendimage" name="/{{basepath}}/_legend/elev_{{requested_info.grid_datum}}_gulf_{{unit}}.png" alt="" width="80" height="280" />
+                    {% endif %}
+                    <!-- {% if requested_info.legend == 'pr'%}
+                        <img class="legendimage" name="/{{basepath}}/_legend/elev_{{requested_info.grid_datum}}_puerto.png" alt="" width="116" height="287" />
+                    {% endif %}-->
+                {% else %}
+                       <!--{% if requested_info.legend == 'pr'%}
+                            <img class="legendimage" name="/{{basepath}}/_legend/elev_{{requested_info.grid}}_datum_nostorm_puerto.png" alt="" width="116" height="265" />
+                       {% else %}-->
+                        <img class="legendimage" name="/{{basepath}}/_legend/elev_{{requested_info.grid_datum}}_nostorm_{{unit}}.png" alt="" width="81" height="280" />
+                       <!--{% endif %} -->
+                {% endif %}
+   		 	</div>
+    	{% endif %}
+
+        </div>
+    {% endif %}   <!--end elevshp-->
+
+
+</div>
+{% endif %} <!-- SHP layers-->
+
+
+<!--/////////////////////////////////////////-->
+<div class="treeaccordion">
+{% if show_hydroval %}
+
+    <h3><a href="#hydro">Water Level Stations</a></h3>
+
+    <div id="hydro">
+    	<div class="check marginleft3"><input type="checkbox" name="layer5" value="hydro"/><label>Gage Stations</label></div>
+    	<div class="left22 legend_desc3 check">
+    		<div id="noaa_nos" class="top5" style="display:none"><input type="checkbox" name="layer5_1" value="noaa_nos"/>&nbsp;&nbsp;<a href="http://tidesandcurrents.noaa.gov/gmap3/" target="_blank">NOAA-NOS</a> stations</div>
+        	<div class="top3" id="noaa_rfs" style="display:none"><input type="checkbox" name="layer5_2" value="noaa_rfs"/>&nbsp;&nbsp;<a href="http://water.weather.gov/ahps/rfc/rfc.php" target="blank">NOAA-RFC</a> stations</div>
+       		<div class="top3" id="usace" style="display:none"><input type="checkbox" name="layer5_3" value="usace"/>&nbsp;&nbsp;<a href="http://www.mvn.usace.army.mil/Missions/Engineering/StageandHydrologicData.aspx" target="_blank">USACE</a> stations</div>
+    		<div class="top3" id="usgs" style="display:none"><input type="checkbox" name="layer5_4" value="usgs"/>&nbsp;&nbsp;<a href="http://waterdata.usgs.gov/nwis/nwis" target="_blank">USGS</a> stations</div>
+    		<div class="top3" id="other" style="display:none"><input type="checkbox" name="layer5_5" value="other"/>&nbsp;&nbsp;Other stations</div>
+    	</div>
+    	<div class="legend_desc2 top4 bottom7">Click on a station icon to display detailed station information.</div>
+
+        <table border="0" cellpadding="1" cellspacing="0">
+        <tr>
+            <td rowspan="5" width="24">&nbsp;</td>
+            <td width="16" valign="top" align="left"><span class="legend_sprite gauge1 block"></span></td>
+            <td>Gage stations related to {% if requested_info.grid_datum == 'msl' %}MSL{% else %}NAVD88{% endif %} or with native offset to {% if requested_info.grid_datum == 'msl' %}MSL{% else %}NAVD88{% endif %}</td>
+        </tr>
+        <tr >
+            <td valign="top" align="left"><span class="legend_sprite gauge8 block"></span></td>
+            <td>Gage stations converted to {% if requested_info.grid_datum == 'msl' %}MSL{% else %}NAVD88 {% endif %} with VDATUM</td>
+        </tr>
+        <tr >
+            <td valign="top" align="left"><span class="legend_sprite gauge9 block"></span></td>
+            <td>Gage stations related or converted to {% if requested_info.grid_datum == 'msl' %}NAVD88{% else %}MSL{% endif %}</td>
+        </tr>
+        </table>
+   	</div>
+{% endif %}<!--end hydro-->
+</div><!--end treeaccordion-->
+

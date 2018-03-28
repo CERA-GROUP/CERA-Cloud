@@ -1,0 +1,43 @@
+{% load tz %}{% load hindcast pseudostorms %}{
+	"dates" : [ {% if alldays %}{% for d in alldays %}
+		{  "text" : "{{d.adcrun_day|date:'d-M-Y'}}", "value" : "{{d.adcrun_day|date:'Ymd'}}" {% if d.has_adv %}, "has_adv" : true{% endif %}{% ifequal d.adcrun_day requested_day.adcrun_day %}, "selected" : true{% endifequal %} }{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}
+	],
+	"times" : [ {% if alltimes %}{% for t in alltimes %}
+		{"text" : {% if time_zone == "utc" %}{% timezone "UTC" %}"{{t.adcrun_daytime_cera|date:'H:i T'}}"{% endtimezone %}{% endif %}{% if time_zone == "cdt" %}{% timezone "US/Central" %}"{{t.adcrun_daytime_cera|date:'f A T'}}"{% endtimezone %}{% endif %}{% if time_zone == "edt" %}{% timezone "US/Eastern" %}"{{t.adcrun_daytime_cera|date:'f A T'}}"{% endtimezone %}{% endif %}{% if time_zone == "ast" %}{% timezone "America/Puerto_Rico" %}"{{t.adcrun_daytime_cera|date:'f A T'}}"{% endtimezone %}{% endif %}, "value" : "{{t.adcrun_daytime_utc|date:'Hi'}}"{% ifequal t.adcrun_daytime_utc requested_info.adcrun_daytime_utc %}, "selected" : true{% endifequal %} }{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}
+	],
+	"comments_day" : [ {% if allinfos_day %}{% for t in allinfos_day %}{% ifequal t.adcrun_time_utc requested_info.adcrun_time_utc %}
+		{ "text" : "{% if dev_site == "1" %}{{t.get_model_info_text_dev}}{% else %}{% if dev_site == "3" or perm == 'pro' %}{{t.get_model_info_text_pro}}{% else %}{% if allinfos_day|length > 1 and allinfos_day_has_adv %}{{t.grid_region2_text}}{% else %}{{t.grid_region1_text}}{% endif %}{% endif %}{% endif %}", "value" : "{{t.id}}"{% ifequal t.id requested_info.id %}, "selected" : true{% endifequal %}{% if t.has_adv %}, "has_adv" : true, "track" : "{{t.track_id.track}}_{{t.track_id.mod_percent}}"{% endif %} }{% endifequal %}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}
+	],
+	"comments_storm" : [ {% if allinfos_storm %}{% for t in allinfos_storm %}{% ifequal t.adcrun_time_utc requested_info.adcrun_time_utc %}
+		{ "text" : "{% if dev_site == "1" %}{{t.get_model_info_text_dev}}{% else %}{% if dev_site == "3" or perm == 'pro' %}{{t.get_model_info_text_pro}}{% else %}{{t.grid_region1_text}}{% endif %}{% endif %}", "value" : "{{t.id}}"{% ifequal t.id requested_info.id %}, "selected" : true{% endifequal %}{% if t.has_adv %}, "has_adv" : true, "track" : "{{t.track_id.track}}_{{t.track_id.mod_percent}}"{% endif %} }{% endifequal %}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}
+	],
+	"years" : [{% if allstorms %}{% regroup allstorms by year as storms %}{% for s in storms %} {
+		"text" : "{{s.grouper|pseudostorms}}", "value" : "{{s.grouper}}"{% if s.grouper.year == requested_year.year %}, "selected" : true{% endif %},
+		"data" : [{% for sitem in s.list %}
+			{ "text" : "{{sitem.get_storm_name}}", "value" : "{{sitem.storm_number}}", "year" : "{{sitem.year}}"{% if requested_storm %}{% if sitem.year == requested_storm.year %}{% if sitem.storm_number == requested_storm.storm_number %}, "selected" : true{% endif %}{% endif %}{% endif %} }{% if not forloop.last %},{% endif %}{% endfor %}
+		]
+	}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %} ],
+	"advisories" : [ {% if alltracks %}{% regroup alltracks by advisory as tracks %}{% for t in tracks %} {
+		"text" : "{{t.grouper|hindcast}}", "value" : "{{t.grouper}}"{% if t.grouper.advisory == requested_advisory.advisory %}, "selected" : true{% endif %},
+		"data" : [{% for titem in t.list %}
+			{ "text" : "{{titem.get_track_info_text}}", "value" : "{{titem.track}}_{{titem.mod_percent}}", "trackid" : "{{titem.id}}", "advisory" : "{{titem.advisory}}"{% if requested_track %}{% if titem.advisory == requested_track.advisory %}{% if titem.id == requested_track.id %}, "selected" : true{% endif %}{% endif %}{% endif %} }{% if not forloop.last %},{% endif %}{% endfor %}
+		]
+	}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %} ],
+	"grid": {
+		"name": "{{requested_info.get_grid_display}}",
+		"datum": { "value": "{{requested_info.grid_datum}}", "text": "{{requested_info.grid_datum_text}}" },
+		"bbox": { "xmin": -97.86, "ymin": 7.90, "xmax": -60.03, "ymax": 45.84 }
+	},
+	"subtracks": {
+		"data": [ {% for s in subtracks %}
+			{ "text": "{{s.text}}", "value": "{{s.value}}", "trackid": "{{s.trackid}}"{% if s.com %}, "com": "{{s.com}}"{% endif %} }{% if not forloop.last %}, {% endif %}{% endfor %}
+		]
+	},
+	"layers" : { {% if layers %}{% for l in layers %}"{{l}}" : true{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %} }{% if first_timestep %},
+	"first_timestep": "{{first_timestep}}"{% endif %},
+	"data_host" : "{{requested_info.get_wmsserver_display}}",
+	"data_host_cache" : "{{requested_info.get_data_host_cache_display}}",
+	"version" : "{{requested_info.program_version}}",
+	"nr_cache_hosts": {{requested_info.nr_cacheserver}},
+	"legend": "{{requested_info.legend}}"
+}

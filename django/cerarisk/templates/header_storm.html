@@ -1,0 +1,86 @@
+{% load tz %}
+<div class="stormheader">
+{% if advisory.advisory == "999" or advisory.advisory == "991"%}<!--OWI hindcast Irma2017-->
+		<!--{% if advisory.storm.stormname == 'Lauren' %}
+                Pseudo Storm <span class="red">{{advisory.storm.stormname}}</span>, 
+                Track: <span class="red">Best Track</span>
+         {% else %}-->
+           Hindcast Storm <span class="red">{{advisory.storm.stormname}}</span>, 
+           Track: NHC<span class="red"> Best Track</span>, 
+           {% if time_zone == "utc" %}{% timezone "UTC" %}{{advisory.storm.start_date_utc|date:'d-M'}}&nbsp;-&nbsp;{{advisory.storm.last_date_utc|date:'d-M Y'}}{% endtimezone %}{% endif %}
+           {% if time_zone == "cdt" %}{% timezone "US/Central" %}{{advisory.storm.start_date_utc|date:'d-M'}}&nbsp;-&nbsp;{{advisory.storm.last_date_utc|date:'d-M Y'}}{% endtimezone %}{% endif %}
+           {% if time_zone == "edt" %}{% timezone "US/Eastern" %}{{advisory.storm.start_date_utc|date:'d-M'}}&nbsp;-&nbsp;{{advisory.storm.last_date_utc|date:'d-M Y'}}{% endtimezone %}{% endif %}
+           {% if time_zone == "ast" %}{% timezone "America/Puerto_Rico" %}{{advisory.storm.start_date_utc|date:'d-M'}}&nbsp;-&nbsp;{{advisory.storm.last_date_utc|date:'d-M Y'}}{% endtimezone %}{% endif %}
+			<!--{% endif %}-->
+{% else %}  
+
+    {% if track.track == "t88" %}
+			Hypothetical Storm <span class="red">{{advisory.storm.stormname}} </span>{{advisory.advisory}}, synthetic track
+    {% else %}  
+ 
+<!--storm_{{advisory.category}}-->
+        {% if advisory.category == "db" or advisory.category == "ds" or advisory.category == "rem" or advisory.category == 'ptc' %}
+                {% if advisory.category == "db" %}Disturbance
+                {% elif advisory.category == "ds" %} Dissipating Storm
+                {% elif advisory.category == "rem" %}Remnants of
+                {% elif advisory.category == "ptc" %}Potential Tropical Cyclone{% endif %}          
+                <span class="red"> {{advisory.storm.stormname}}</span>, Advisory <span class="red">{{advisory.advisory}}</span>,
+        {% else %}  
+           {% if advisory.stormclass == "ex" or advisory.stormclass == "pt" %}
+               {% if advisory.stormclass == "ex"  %}
+                   Extratropical System <span class="red">{{advisory.storm.stormname}}</span>, Advisory <span class="red">{{advisory.advisory}}</span>,
+               {% elif advisory.stormclass == "pt"  %}
+                   Post-Tropical Cyclone <span class="red">{{advisory.storm.stormname}}</span>, Advisory <span class="red">{{advisory.advisory}}</span>,
+               {% endif %}
+           {% else %}  
+               {% if advisory.category == "sd" %}
+                   Subtropical Depression <span class="red">{{advisory.storm.stormname}}</span>, Advisory <span class="red">{{advisory.advisory}}</span>,
+               {% endif %}
+               {% if advisory.category == "ss" %}
+                   Subtropical Storm <span class="red">{{advisory.storm.stormname}}</span>, Advisory <span class="red">{{advisory.advisory}}</span>,
+               {% endif %}
+        
+               {% if advisory.category == "td"%}
+                    Tropical Depression <span class="red">{{advisory.storm.stormname}}</span>, Advisory <span class="red">{{advisory.advisory}}</span>,
+                {% endif %}
+                {% if advisory.category == "ts"%}
+                    Tropical Storm <span class="red">{{advisory.storm.stormname}}</span>, Advisory <span class="red">{{advisory.advisory}}</span>,
+                {% endif %}
+                {% if advisory.category == "1" or advisory.category == "2" or advisory.category == "3" or advisory.category == "4" or advisory.category == "5" %}
+                    Hurricane <span class="red">{{advisory.storm.stormname}}</span>, Advisory <span class="red">{{advisory.advisory}}</span>,
+                {% endif %}
+            {% endif %}
+        {% endif %}
+        
+        {% if track.track == "t01"%}
+            Track: NHC <span class="red">official forecast</span>,
+        {% elif track.track == "t02"%}
+            Track: <span class="red">{{track.mod_percent}}% maximum wind speed</span>,
+        {% elif track.track == "t03"%}
+            Track: <span class="red">{{track.mod_percent}}% over land speed</span>,
+        {% elif track.track == "t04"%}
+            Track: NHC <span class="red">{{track.mod_percent}}% veer left</span>,
+        {% elif track.track == "t05"%}
+            Track: NHC <span class="red">{{track.mod_percent}}% veer right</span>,
+        {% elif track.track == "t06"%}
+            Track: <span class="red">{{track.mod_percent}}% maximum radius</span>,
+        {% elif track.track == "t07"%}
+            Track: <span class="red">{{track.mod_percent}}% max. wind speed only</span>,
+        {% elif track.track == "t08"%}
+            Track: <span class="red">{{track.mod_percent}}% constant max. radius</span>,
+        {% elif track.track == "t14"%}
+            Track: <span class="red">{{track.mod_percent}}mi shift left</span>,
+        {% elif track.track == "t15"%}
+            Track: <span class="red">{{track.mod_percent}}mi shift right</span>,
+        {% endif %}
+        
+       advisory issued: 
+        {% if time_zone == "utc" %}{% timezone "UTC" %}{{advisory.adv_time_utc|date:'d-M-Y, H:i T'}}{% endtimezone %}{% endif %}
+        {% if time_zone == "cdt" %}{% timezone "US/Central" %}{{advisory.adv_time_utc|date:'d-M-Y, f A T'}}{% endtimezone %}{% endif %}
+        {% if time_zone == "edt" %}{% timezone "US/Eastern" %}{{advisory.adv_time_utc|date:'d-M-Y, f A T'}}{% endtimezone %}{% endif %}
+        {% if time_zone == "ast" %}{% timezone "America/Puerto_Rico" %}{{advisory.adv_time_utc|date:'d-M-Y, f A T'}}{% endtimezone %}{% endif %}
+    
+	{% endif %}
+    
+{% endif %}
+</div>

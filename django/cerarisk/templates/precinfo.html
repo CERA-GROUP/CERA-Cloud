@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<head> 
+	<link rel="stylesheet" href="/{{basepath}}/_css/jquery-ui-1.11.css" type="text/css"/>
+<style type="text/css">
+		.info {
+			width:526px;
+			height:386px;
+			font-family:Arial, Helvetica, sans-serif;
+			font-size: 12px;
+			background-color:#EAE6EA;
+			line-height:24px;
+			/*border-radius:3px;*/ /*IE*/
+			/*-khtml-border-radius:3px;*/ /*Linux browsers */
+			position:relative; /*to position the station link at the bottom*/
+			overflow: hidden;
+			margin:0;padding:0
+		}
+	</style>
+	<script type="text/javascript" language="JavaScript" src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+	<script type="text/javascript" language="JavaScript" src="/{{basepath}}/_scripts/highcharts.js"></script>
+
+	<script type="text/javascript" language="JavaScript">
+	$(document).ready(function() {
+
+   		//precision for labels on y-axis (left and right side)					
+		var precision_left = 1 	// in
+		var precision_right = 1 // cm
+
+//{{min}} is always 0 for prec charts
+		diff_left = {{max}} //- {{min}}	   // in
+		diff_right = {{max}}*2.54// - ({{min}}*2.54)   // cm			
+
+		if (diff_left > 0.05 && diff_left <= 0.5)
+			precision_left = 2
+		else if (diff_left != 0 && diff_left < 0.05) 
+			var precision_left = 3
+
+		if (diff_right > 0.05 && diff_right <= 0.5) 
+			precision_right = 2
+		else if (diff_left != 0 && diff_right < 0.05) 
+			var precision_right = 3
+			
+//text for maximum values in legend
+		var maxvalue_text = 
+		//storm: 0 = no storm, 1= active storm, 2= hindcast
+			{% if storm != 2 %}
+			'total precipitation amount relative to' + {% if storm == 1 %}' advisory time:'{% else %}' model start time:'{% endif %} + '<br />past 48 hrs = ' + {% if total_48h != -99999 %}Highcharts.numberFormat({{total_48h}}, precision_left) + ' in, '{% else %}'N/A, '{% endif %}
+			+ 'past 24 hrs = ' + {% if total_24h != -99999 %}Highcharts.numberFormat({{total_24h}}, precision_left) + ' in, '{% else %}'N/A, '{% endif %}
+			+ 'past 6 hrs = ' + {% if total_6h != -99999 %}Highcharts.numberFormat({{total_6h}}, precision_left) + ' in '{% else %}'N/A'{% endif %} 
+			//+ '<br />max. precipitation within 2 hours: ' + Highcharts.numberFormat({{maxval}}, precision_left) +' in (' + Highcharts.numberFormat({{maxval}}*2.54, precision_right) + ' cm)'
+			{% else %} 'total precipitation amount for the storm hindcast: ' + Highcharts.numberFormat({{total_hindcast}})
+			{% endif %}
+			
+		//daytime format for day and hour (zoom in) on x-axis depending on time_zone
+		//timezone: {{time_zone}}
+		var dayformat =			
+			{% if time_zone == 'UTC' %}
+				'%b %d<br> %H:%M'
+			{% else %}
+				'%b %d<br> %l %p'
+			{% endif %}
+			
+		var hourformat =
+			{% if time_zone == 'UTC' %}
+				'%b %d<br> %H:%M'
+			{% else %}
+				'%b %d<br> %l %p'
+			{% endif %}
+			
+		var dayformat_tooltip =			
+			{% if time_zone == 'UTC' %}
+				'%b %d, %H:%M'
+			{% else %}
+				'%b %d, %l %p'
+			{% endif %}
+
+///////////////////////////////////////////////////////////////////////
+		var chart = new Highcharts.Chart({
+			chart: {
+				renderTo: 'chart_div',
+				width: 526,
+				height: 336,
+				type: 'areaspline',
+				 // modify the legend symbol for the areaspline from a rectangle to a line
+				events: {
+   		 	load: function(event) {
+	$('.highcharts-legend-item rect').attr('height', '2').attr('y', '10');
+		}
+		},
+				marginTop: 45,
+				marginBottom: 94,
+				spacingTop: 9,
+				spacingLeft: 3,
+				spacingRight: 3,
+				zoomType: 'x',
+				plotBorderColor: null,
+				backgroundColor: {
+					linearGradient: [0, 0, 250, 500],
+					stops: [
+							[0, 'rgb(86, 86, 98)'],
+							[0, 'rgb(58, 106, 58)'],
+							[1, 'rgb(0, 0, 0)']
+						]	
+				}
+			},
+			title: {
+				text: '2-hours Precipitation Accumulation (in / cm)',
+				style:{
+					color: '#FFF', 
+					font: '13px Arial'
+				}
+			},
+			subtitle: {
+				text: 'Click and drag in the plot area to zoom in',
+				style:{
+					color: '#6D869F' 
+				},
+				y:26 //to position the subtitle correctly under the title			
+			},
+			colors: [
+				{% if observed_data != None %}'#A5BFFF',{% endif %}
+				'#AA4643'	//maximum value data point
+			],
+			plotOptions: {
+areaspline: {
+fillColor: {
+	linearGradient: [0, 0, 0, 400],
+	stops: [
+	[0, 'rgb(69, 114, 167)'],
+	[1, 'rgba(2,0,0,0)']
+	]
+					},
+					marker: {
+						radius: 0,			//keep it to draw the max/min values, set to 0 to avoid to be seen on the line
+						symbol: 'circle',
+						states: {
+							hover: {enabled: true, radius: 3}
+						}
+					},
+					lineWidth: 2,
+					states: {
+						hover: {enabled: true, lineWidth: 2}
+					}
+				}
+			},
+			
+			//text for maximum value point in legend
+			credits: {
+				enabled: true,
+				position: {
+					align: 'center',
+					x: 0,
+					verticalAlign: 'bottom',
+					y: -45
+				},
+				style: {
+					color: '#99AAFF',
+					font: '12px Arial',
+					cursor: 'default'
+				},
+				text: maxvalue_text,
+				href:"#"
+			},
+			
+			xAxis: {
+				type: 'datetime',
+				dateTimeLabelFormats: { //custom date formats for different scales and timezones
+					day: dayformat,
+					hour: hourformat				
+				},
+				{% if storm != 2 %} //no hindcast
+				maxZoom: 12 * 3600 * 1000, //half a day
+				{% else %}
+				maxZoom: 24 * 3600 * 1000, //one day
+				{% endif %}
+				lineColor: '#4D4D55',
+				lineWidth: 1,
+				gridLineColor: '#4D4D55',
+				gridLineWidth: 1,
+				labels: {style: {color: "#CCC", font: '11px Arial'}},
+				tickWidth: 1,
+				tickLength: 5,
+				tickColor: '#CCC',
+				maxPadding: false, //avoid empty days after the last value if this value is at 00:00
+			endOnTick: true,
+				showLastLabel: true,
+				labels: {
+					style: {color: "#CCC", font: '11px Arial'},
+					y: 15,  //The y position offset of the label
+				},
+				{% if storm != 2 %} //hindcast
+				tickInterval: 12 * 3600 * 1000 //half day
+				{% else %}
+				tickInterval: 24 * 3600 * 1000 //one day
+				{% endif %}
+
+			},
+			yAxis: [{ // primary yAxis
+				title: {text:null},
+				lineColor: '#CCC',
+				lineWidth: 1,
+				gridLineColor: '#CCC',
+				labels: {
+					formatter: function() {
+						return Highcharts.numberFormat(this.value, precision_left) +' in';
+					},
+					style: {color: "#CCC", font: '11px Arial'},
+					y: 0,  //The y position offset of the label, default 3 
+				},
+				tickWidth:1,
+				tickColor:'#CCC',
+				maxPadding: 0,
+				max: {{max}}, 
+				//min: {{min}} //min value of data series if < 0 or gage zero if < series min value, otherwise zero
+
+			}, { // secondary yAxis
+				title: {text: null},
+				lineColor: '#CCC',
+				lineWidth: 1,
+				gridLineColor: '#4D4D55',
+				labels: {
+					formatter: function() {
+						return Highcharts.numberFormat(this.value*2.54, precision_right) +' cm';
+					},
+					style: {color: '#CCC', font: '11px Arial'},
+					y: 0,  //The y position offset of the label, default 3 
+				},
+				linkedTo: 0, //Index of another axis that this axis is linked to
+				opposite: true,
+				tickWidth: 1,
+				tickColor: '#CCC'
+			}],
+			tooltip: {
+		formatter: function() {
+		var result = '<b>precipitation total for the past 2 hrs<br/>' + Highcharts.dateFormat(dayformat_tooltip, (this.x - 7200000)) + ' - ' + Highcharts.dateFormat(dayformat_tooltip, this.x) + '</b><br/>' +
+								 '<span style="color:#4346AA;font-weight:bold">' + Highcharts.numberFormat(this.y, precision_left) +' in (' + Highcharts.numberFormat(this.y*2.54, precision_right) + ' cm)</span>';
+					return result;
+				},
+
+				style: {font: '9pt Arial'},
+				useHTML: true,
+				zIndex: 9998	
+		},
+			legend: {
+				layout: 'horizontal',
+				align: 'center',
+				x: -5,	//centers the legend
+				y: 2,
+				verticalAlign: 'bottom',
+				borderWidth: 0,
+				//symbolWidth: 35,
+				//symbolPadding: 10, //padding between the legend item symbol and the legend item text
+				//itemWidth: 140, //determines the distance between to legend items
+				itemStyle: {color: '#CCC', font: '11px Arial', cursor: 'default'},
+				itemHoverStyle: {color: '#CCC', cursor: 'default'}
+			},
+			series: [{% autoescape off %}
+				{% if observed_data != None %}
+				{{observed_data}}
+				{% if maxval %} 
+				,
+				 // modify the legend symbol for the max_value to a point
+				{ 
+					name: 'maximum',
+					type: 'line', 	// this allows to draw the markers for areaspline as point in the legend
+					lineWidth:0,  	// draw only the point and not the line in legend
+					color: '#AA4643',
+					marker: {
+						radius: 3, 
+						symbol: 'circle'
+					},
+					id: 'maxvalue'	// link to data series for max_value
+				},
+				//max_value data point
+				{
+					linkedTo: 'maxvalue',
+					data: [{ x: {{maxval_ms}}, y: {{maxval}} }],
+					marker: {
+						radius: 3, 
+						symbol: 'circle',
+						states: {hover: {enabled: true, radius: 4}}
+					},
+					zIndex:19
+				}
+				{% endif %}
+				{% endif %}
+			{% endautoescape %}]
+		});
+	});
+	</script>
+</head>
+<!--///////////////////////////////////////////////////-->
+<body>
+<div class="info" align="center">
+
+<!-- info will be retrieved from PostGresQL DB -->
+<div><span style="font-weight:bold">{{station.stationname}}, {{station.state}}</span> ({{station.stationid}}{% if station.agencyname %}, {{station.agencyname}} {% endif %})</div>
+
+	<div id="chart_div"></div>
+<!--{{error}}-->
+
+<div style="font-size:11px; height:25px; position:absolute; bottom:0; margin-left:5px">
+	{% if station.realtimeurl %}
+		Precipitation station website: <a href="{{station.realtimeurl}}" target="_blank">{{station.agencyname}}</a>
+	{% endif %}
+</div>
+
+</body> 
+</html> 

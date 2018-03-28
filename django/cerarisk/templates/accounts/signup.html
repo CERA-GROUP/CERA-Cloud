@@ -1,0 +1,19 @@
+{% extends 'accounts/base.html' %}
+
+{% block head %}
+	<title>Request Login CERA - Coastal Emergency Risks Assessment</title>
+{% endblock head %}
+
+{% block body %}
+	<div class="headline">Request a Login</div>
+	<div class="descr1">If you work for a federal or state agency or institution, emergency management or response, please fill out the form below to obtain a login. (* required field)<div>
+    <div class="descr2">If you are an international user, please send us a direct <a href="/cerarisk/accounts/contact" >message</a>.</div>
+
+	<form method="post">
+		{% csrf_token %}
+		{{ form.as_p }}
+		<button class="btn_login" type="submit">Send</button>
+	</form>
+	<div class="cancel"><a href="/cerarisk/"><button class="btn_cancel">Go back to website</button></a></div>
+{% endblock body %}
+

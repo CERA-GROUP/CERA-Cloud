@@ -1,0 +1,26 @@
+First Name:
+{{ contact_firstname }}
+
+Last Name:
+{{ contact_firstname }}
+
+Email:
+{{ contact_email }}
+
+Organization:
+{{ contact_organization }}
+
+Job Title:
+{{ contact_jobtitle }}
+
+City:
+{{ contact_city }}
+
+State:
+{{ contact_state }}
+
+Phone:
+{{ contact_phone }}
+
+Message:
+{{ form_content|safe|striptags }}

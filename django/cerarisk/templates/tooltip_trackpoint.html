@@ -1,0 +1,18 @@
+<div class="info_track" style="border-color:{% verbatim %}{{=cat_track_color}}{% endverbatim %}">
+	<div class="cat_track" style="background-color:{% verbatim %}{{=cat_track_color}}{% endverbatim %}" align="center">
+        {{stormname}} {% if advisory != '999' %}{% verbatim %}{{=status}}{% endverbatim %}<span style="display:{% verbatim %}{{=show_adv}}{% endverbatim %}">{{advisory}})</span>{% endif %}
+    </div>
+     
+    <div class="content_tooltip">{% autoescape off %}
+    <b>Valid at: {% verbatim %}{{=datetime}}{% endverbatim %}</b><br/>
+    {% verbatim %}{{=predicted_category}}{% endverbatim %}Category: {% verbatim %}{{=storm_category_name}}{% endverbatim %} <br/>
+    Maximum Wind: {% verbatim %}{{=maxwind_kt}}{% endverbatim %} knots ({% verbatim %}{{=maxwind_mph}}{% endverbatim %} mph)<br/>
+    <span style="display:{% verbatim %}{{=show_gusts}}{% endverbatim %}">Wind Gusts: {% verbatim %}{{=gusts_kt}}{% endverbatim %} knots ({% verbatim %}{{=gusts_mph}}{% endverbatim %} mph)<br/></span>
+	<span style="display:{% verbatim %}{{=show_press}}{% endverbatim %}">Minimum Pressure: {% verbatim %}{{=minpress}}{% endverbatim %} mb<br/></span>
+    Location: {% verbatim %}{{=y}}{% endverbatim %}N, {% verbatim %}{{=x}}{% endverbatim %}W<br/>
+    <span style="display:{% verbatim %}{{=show_move}}{% endverbatim %}">Movement: {% verbatim %}{{=movement}}{% endverbatim %}</span>
+    {% endautoescape %}
+    </div>
+</div>
+
+

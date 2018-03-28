@@ -1,0 +1,11 @@
+{% load tz %}
+{% if time_zone == "utc" %}{% timezone "UTC" %}
+{% include "retrieve_adcrun_days_child.test" %}
+{% endtimezone %}{% endif %}
+{% if time_zone == "cdt" %}{% timezone "US/Central" %}
+{% include "retrieve_adcrun_days_child.test" %}
+{% endtimezone %}{% endif %}
+{% if time_zone == "edt" %}{% timezone "US/Eastern" %}
+{% include "retrieve_adcrun_days_child.test" %}
+{% endtimezone %}{% endif %}
+

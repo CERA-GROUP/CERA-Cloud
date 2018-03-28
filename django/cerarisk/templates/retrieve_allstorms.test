@@ -1,0 +1,12 @@
+"allyears": <br />
+{% for a in allyears %}
+{{a.year}}<br />
+{% endfor %}<br /> 
+"requested_year": {{requested_year}}
+<br />
+"allstorms": <br />
+{% for s in allstorms %}
+{{s.year}}-{{s.stormname}}<br />
+{% endfor %}<br />
+"requested_storm": {{requested_storm}}
+

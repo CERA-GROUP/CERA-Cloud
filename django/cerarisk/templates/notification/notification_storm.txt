@@ -1,0 +1,41 @@
+{% load tz %}CERA/ASGS user community,
+
+This is an automated message from the Coastal Emergency Risks Assessment (CERA).
+New ADCIRC model run results from the ADCIRC Surge Guidance System (ASGS)
+have been posted on the CERA{% if asgs == 'dev' %}-Developer{% elif asgs == 'pr' %}-Puerto Rico{% elif asgs == 'ri' %}-Rhode Island{% endif %} website.
+
+	{% spaceless %}storm: {{info.track_id.advisory.storm.get_storm_name}}
+	advisory: {% if info.track_id.advisory.advisory == '999' %}Hindcast{% else %}{{info.track_id.advisory.advisory}}{% endif %}
+	track: {% if info.track_id.advisory.advisory == '999' %}NHC Best Track{% else %}{{info.track_id.get_track_display}} {% if info.track_id.mod_percent != "0" %}{{info.track_id.mod_percent}}% {% endif %}{% endif %}
+	ADCIRC grid: {{info.get_grid_display}}
+	wind model: {{info.windmodel}}
+	{% if info.track_id.advisory.advisory != '999' %}advisory time: {% if asgs == 'dev' or asgs == 'pro' %}{% timezone "UTC" %}{{info.track_id.advisory.adv_time_utc|date:'d-M-Y, H:i T'}}{% endtimezone %}{% endif %}{% if asgs == 'nc' %}{% timezone "US/Eastern" %}{{info.track_id.advisory.adv_time_utc|date:'d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% if asgs == 'ng' %}{% timezone "US/Central" %}{{info.track_id.advisory.adv_time_utc|date:'d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% if asgs == 'pr' %}{% timezone "America/Puerto_Rico" %}{{info.track_id.advisory.adv_time_utc|date:'d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% endif %}
+	{% if asgs == 'dev' or asgs == 'pro' %}ASGS model run start time: {% if asgs == 'dev' or asgs == 'pro' %}{% timezone "UTC" %}{{info.adcrun_daytime_utc|date:'d-M-Y, H:i T'}}{% endtimezone %}{% endif %}{% if asgs == 'nc' %}{% timezone "US/Eastern" %}{{info.adcrun_daytime_utc|date:'d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% if asgs == 'ng' %}{% timezone "US/Central" %}{{info.adcrun_daytime_utc|date:'d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% if asgs == 'pr' %}{% timezone "America/Puerto_Rico" %}{{info.adcrun_daytime_utc|date:'d-M-Y, fA T'}}{% endtimezone %}{% endif %}{% endif %}
+	{% if asgs == 'dev' and info.asgs_instance %}ASGS instance: {{info.asgs_instance}}{% endif %}{% endspaceless %}
+	
+Please visit: {% if asgs == 'dev' %}{{link_dev}}{% elif asgs == 'pr' %}{{link_pr}}{% elif asgs == 'ri' %}{{link_ri}}{% elif asgs == 'pro' or asgs == 'nc' or asgs == 'ng'%}{{link_cera}}{% endif %}
+
+You may need to refresh your web browser to see the latest results.
+
+-----------
+Follow us on Twitter: https://twitter.com/CERAStormSurge
+
+PLEASE NOTE:
+By opening the URL contained in this email, I agree to the following terms and conditions:
+
+The information presented on the CERA website represents intellectual property of the ADCIRC storm surge model group at the University of North Carolina at Chapel Hill, the ADCIRC Surge Guidance System (ASGS) developed at Seahorse Coastal Consulting (NC), and the Coastal Emergency Risks Assessment (CERA) program at the Louisiana State University.
+
+The storm surge model data and the CERA graphical displays are research efforts and should never be conveyed as official storm surge guidance for the general public. Please obtain official storm surge guidance from the National Weather Service advisories.
+
+-----------
+General information and guidance during an active storm associated with the ASGS/CERA storm surge product can be obtained from
+	Rick Luettich, UNC Institute of Marine Sciences (rick_luettich@unc.edu, 252-726-6841)
+	{% if asgs == 'ng' %}Robert Twilley, Louisiana Sea Grant at LSU (rtwilley@lsu.edu){% endif %}
+	{% if asgs == 'pr'%}Joannes Westerink (jjw@nd.edu){% endif%}
+
+If you have any questions about the ADCIRC storm surge data, please contact
+	Jason Fleming, Seahorse Coastal Consulting, email: jason.fleming@seahorsecoastal.com
+
+For questions about this website, please contact
+	Carola Kaiser, Louisiana State University, email: ckaiser@cct.lsu.edu
+
